@@ -86,12 +86,13 @@ test('R3: disabled, short of one SKU, and off are skipped', () => {
 });
 
 test('R4: lowest zone wins', () => {
-  const result: Result = routeOne(created('#1', timeAt(0), '07030', [['NW-A', 1]]), [
-    makeWarehouse('WH-NV', NW_A_STOCK),
-    makeWarehouse('WH-GA', NW_A_STOCK),
-    njWarehouse(),
-  ]);
-  assert.equal(result.destination, 'WH-NJ');
+  const zones: Record<string, Record<string, number>> = { 'WH-NJ': { '070': 5 }, 'WH-GA': { '070': 1 }, 'WH-NV': { '070': 8 } };
+  const result: Result = routeOne(
+    created('#1', timeAt(0), '07030', [['NW-A', 1]]),
+    [makeWarehouse('WH-NV', NW_A_STOCK), makeWarehouse('WH-GA', NW_A_STOCK), njWarehouse()],
+    zones,
+  );
+  assert.equal(result.destination, 'WH-GA');
   assert.equal(result.zone, 1);
   assert.equal(result.reason, 'zone 1');
 });
@@ -113,7 +114,12 @@ test('R5: zone tie goes to the highest cover', () => {
 });
 
 test('R6: equal zone and cover goes by priority', () => {
-  const zones: Record<string, Record<string, number>> = { 'WH-NJ': { '070': 2 }, 'WH-GA': { '070': 2 }, 'WH-NV': { '070': 2 } };
+  const zones: Record<string, Record<string, number>> = {
+    'WH-NJ': { '070': 2 },
+    'WH-GA': { '070': 2 },
+    'WH-NV': { '070': 2 },
+    'WH-TX': { '070': 2 },
+  };
   const order: OrderEvent = created('#1', timeAt(0), '07030', [['NW-A', 1]]);
   const result: Result = routeOne(
     order,
@@ -123,6 +129,7 @@ test('R6: equal zone and cover goes by priority', () => {
   assert.equal(result.destination, 'WH-NJ');
   assert.equal(result.reason, 'zone 2, tie-break priority');
   assert.equal(routeOne(order, [makeWarehouse('WH-NV', NW_A_STOCK), makeWarehouse('WH-GA', NW_A_STOCK)], zones).destination, 'WH-GA');
+  assert.equal(routeOne(order, [makeWarehouse('WH-TX', NW_A_STOCK), makeWarehouse('WH-NV', NW_A_STOCK)], zones).destination, 'WH-NV');
 });
 
 test('R7: no stock goes to partner', () => {
@@ -146,17 +153,19 @@ test('Sequence: routed by created time, stock reserved, input untouched', () => 
   assert.deepEqual(route(data).map(describeRoute), routed);
 });
 
-test('Edits: merged into one result; unknown order ignored', () => {
+test('Edits: merged into one result; an edit with no created event throws', () => {
   const warehouses: Warehouse[] = [
     makeWarehouse('WH-NJ', { 'NW-A': [5, 1], 'NW-B': [0, 1] }),
     makeWarehouse('WH-GA', { 'NW-A': [5, 1], 'NW-B': [5, 1] }),
   ];
   const edit: OrderEvent = { type: 'order_edited', orderNumber: '#1', at: timeAt(3), addedLines: [{ sku: 'NW-B', quantity: 1 }] };
   const ghost: OrderEvent = { type: 'order_edited', orderNumber: '#9', at: timeAt(4), addedLines: [{ sku: 'NW-B', quantity: 1 }] };
-  const results: Result[] = route(makeData([created('#1', timeAt(0), '07030', [['NW-A', 1]]), edit, ghost], warehouses, DEFAULT_ZONES));
+  const events: OrderEvent[] = [created('#1', timeAt(0), '07030', [['NW-A', 1]]), edit];
+  const results: Result[] = route(makeData(events, warehouses, DEFAULT_ZONES));
   assert.equal(results.length, 1);
   assert.equal(results[0].destination, 'WH-GA');
   assert.deepEqual(results[0].notes, ['edit +3 min merged']);
+  assert.throws(() => route(makeData([...events, ghost], warehouses, DEFAULT_ZONES)), /#9/);
 });
 
 test('Messy: numeric zip, ZIP+4, lowercase SKU, bundle sum', () => {
@@ -191,6 +200,112 @@ test('Messy: numeric zip, ZIP+4, lowercase SKU, bundle sum', () => {
     ).destination,
     'WH-NJ',
   );
+});
+
+const orderOne = (zip: unknown, lines: [string, number][], country?: string): OrderEvent => created('#1', timeAt(0), zip, lines, country);
+
+test('Messy: spaces are trimmed, velocity 0 is infinite cover, an early edit merges, minutes round', () => {
+  const trimmed: Result = routeOne(created('#1', timeAt(0), ' 07030 ', [[' nw-a ', 1]]), [njWarehouse()]);
+  assert.equal(trimmed.destination, 'WH-NJ');
+  assert.deepEqual(trimmed.notes, ['SKU  nw-a  read as NW-A']);
+  const zones: Record<string, Record<string, number>> = { 'WH-NJ': { '070': 2 }, 'WH-GA': { '070': 2 } };
+  const infinite: Result = routeOne(
+    orderOne('07030', [['NW-A', 1]]),
+    [makeWarehouse('WH-NJ', { 'NW-A': [5, 1] }), makeWarehouse('WH-GA', { 'NW-A': [1, 0] })],
+    zones,
+  );
+  assert.equal(infinite.destination, 'WH-GA');
+  assert.equal(infinite.reason, 'zone 2, tie-break cover');
+  const edit: OrderEvent = {
+    type: 'order_edited',
+    orderNumber: '#1',
+    at: new Date(Date.parse(timeAt(0)) + 150000).toISOString(),
+    addedLines: [],
+  };
+  const early: Result[] = route(makeData([edit, orderOne('07030', [['NW-A', 1]])], [njWarehouse()], DEFAULT_ZONES));
+  assert.deepEqual(early[0].notes, ['edit +3 min merged']);
+  const shortEdit: OrderEvent = { ...edit, at: new Date(Date.parse(timeAt(0)) + 140000).toISOString() };
+  const roundedDown: Result[] = route(makeData([orderOne('07030', [['NW-A', 1]]), shortEdit], [njWarehouse()], DEFAULT_ZONES));
+  assert.deepEqual(roundedDown[0].notes, ['edit +2 min merged']);
+});
+
+test('Duplicates: an identical event is skipped with a note; a conflicting order_created throws', () => {
+  const edit: OrderEvent = { type: 'order_edited', orderNumber: '#1', at: timeAt(3), addedLines: [{ sku: 'NW-A', quantity: 1 }] };
+  const base: OrderEvent = orderOne('07030', [['NW-A', 1]]);
+  const [result]: Result[] = route(makeData([base, edit, edit, base], [njWarehouse()], DEFAULT_ZONES));
+  assert.deepEqual(result.notes, ['duplicate order_created skipped', 'edit +3 min merged', 'duplicate order_edited skipped']);
+  const other: OrderEvent = created('#1', timeAt(1), '07030', [['NW-A', 2]]);
+  assert.throws(() => route(makeData([base, other], [njWarehouse()], DEFAULT_ZONES)), /#1/);
+});
+
+test('Messy: a short string ZIP is padded', () => {
+  const padded: Result = routeOne(orderOne('2134', [['NW-A', 1]]), [njWarehouse()]);
+  assert.equal(padded.zone, 3);
+  assert.deepEqual(padded.notes, ['ZIP 2134 read as 02134']);
+  const unpadded: Result = routeOne(orderOne('3030', [['NW-A', 1]]), [njWarehouse()], { 'WH-NJ': { '303': 1 } });
+  assert.equal(unpadded.destination, 'PARTNER');
+  assert.equal(unpadded.reason, 'ZIP prefix 030 not in zones');
+});
+
+test('Validation: bad quantities throw with the order number', () => {
+  for (const quantity of [0, -5, '2', 1.5])
+    assert.throws(() => routeOne(orderOne('07030', [['NW-A', quantity as number]]), [njWarehouse()]), /#1/);
+});
+
+test('Validation: a null zone is no zone; bad shapes throw with the order number or warehouse code', () => {
+  const nullZone: Result = routeOne(orderOne('07030', [['NW-A', 1]]), [njWarehouse(), makeWarehouse('WH-GA', NW_A_STOCK)], {
+    'WH-NJ': { '070': null },
+    'WH-GA': { '070': 4 },
+  });
+  assert.equal(nullZone.destination, 'WH-GA');
+  const onlyNull: Result = routeOne(orderOne('07030', [['NW-A', 1]]), [njWarehouse()], { 'WH-NJ': { '070': null } });
+  assert.equal(onlyNull.reason, 'ZIP prefix 070 not in zones');
+  assert.throws(() => routeOne(created('#1', 'soon', '07030', [['NW-A', 1]]), [njWarehouse()]), /#1/);
+  const noShipTo: OrderEvent = { type: 'order_created', orderNumber: '#1', at: timeAt(0), lines: [] } as unknown as OrderEvent;
+  assert.throws(() => routeOne(noShipTo, [njWarehouse()]), /#1/);
+  const noCountry: OrderEvent = { ...orderOne('07030', [['NW-A', 1]]), shipTo: { zip: '07030' } } as unknown as OrderEvent;
+  assert.throws(() => routeOne(noCountry, [njWarehouse()]), /#1/);
+  const cancelled: OrderEvent = { type: 'order_cancelled', orderNumber: '#2', at: timeAt(1) } as unknown as OrderEvent;
+  const withCancel: Data = makeData([orderOne('07030', [['NW-A', 1]]), cancelled], [njWarehouse()], DEFAULT_ZONES);
+  assert.throws(() => route(withCancel), /#2 has unknown event type order_cancelled/);
+  const noInventory: Warehouse = { code: 'WH-NJ', enabled: true } as unknown as Warehouse;
+  assert.throws(() => routeOne(orderOne('07030', [['NW-A', 1]]), [noInventory]), /WH-NJ has no inventory/);
+  const badRow: Warehouse = makeWarehouse('WH-NJ', { 'NW-A': [null as unknown as number, 1] });
+  assert.throws(() => routeOne(orderOne('07030', [['NW-A', 1]]), [badRow]), /WH-NJ has a bad inventory row for NW-A/);
+});
+
+test('Messy: country is trimmed and uppercased', () => {
+  const result: Result = routeOne(orderOne('07030', [['NW-A', 1]], ' us'), [njWarehouse()]);
+  assert.equal(result.destination, 'WH-NJ');
+  assert.deepEqual(result.notes, ['country  us read as US']);
+  assert.equal(routeOne(orderOne('07030', [['NW-A', 1]], 'ca'), [njWarehouse()]).reason, 'international (CA)');
+});
+
+test('Bundles: one note per bundle, lowercase components work, nested bundles and empty orders throw', () => {
+  const bundles: Bundle[] = [
+    { sku: 'NW-BNDL', components: [{ sku: 'nw-a', quantity: 1 }] },
+    { sku: 'NW-NEST', components: [{ sku: 'nw-bndl', quantity: 1 }] },
+  ];
+  const twice: Result = routeOne(
+    orderOne('07030', [
+      ['NW-BNDL', 1],
+      ['NW-BNDL', 1],
+    ]),
+    [makeWarehouse('WH-NJ', { 'NW-A': [2, 1] })],
+    DEFAULT_ZONES,
+    bundles.slice(0, 1),
+  );
+  assert.equal(twice.destination, 'WH-NJ');
+  assert.deepEqual(twice.notes, ['bundle NW-BNDL expanded']);
+  assert.throws(() => routeOne(orderOne('07030', [['NW-NEST', 1]]), [njWarehouse()], DEFAULT_ZONES, bundles), /NW-NEST/);
+  assert.throws(() => routeOne(orderOne('07030', []), [njWarehouse()]), /#1 has no items/);
+});
+
+test('Validation: warehouse and off codes are checked', () => {
+  const order: OrderEvent = orderOne('07030', [['NW-A', 1]]);
+  assert.throws(() => routeOne(order, [njWarehouse()], DEFAULT_ZONES, [], { off: ['wh-nj'] }), /wh-nj/);
+  assert.throws(() => routeOne(order, [makeWarehouse('WH-OH', NW_A_STOCK)]), /WH-OH/);
+  assert.throws(() => routeOne(order, [njWarehouse(), njWarehouse()]), /WH-NJ/);
 });
 
 test('Output: formatRoute', () => {

@@ -4,10 +4,11 @@
   "type": "module",
   "scripts": {
     "route": "tsx src/cli.ts",
-    "test": "tsx --test src/router.test.ts src/golden.test.ts",
+    "test": "tsx --test src/router.test.ts src/golden.test.ts src/args.test.ts",
+    "typecheck": "tsc --noEmit",
     "prepare": "husky",
     "format": "prettier --write src eslint.config.js",
-    "check": "prettier --check src eslint.config.js && eslint src && npm test"
+    "check": "npm run typecheck && prettier --check src eslint.config.js && eslint src && npm test"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

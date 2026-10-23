@@ -1,7 +1,8 @@
 // Golden tests: the expected routes come from a hand trace of the real files, made before the router existed.
+import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadData, route, type Data, type Result } from './router.ts';
+import { loadData, route, formatRoute, type Data, type Result } from './router.ts';
 
 const data: Data = loadData();
 const summarize = (result: Result): string =>
@@ -53,4 +54,25 @@ test('golden: Question 1 orders with WH-NV off', () => {
     '#2051 WH-GA z7',
     '#2056 PARTNER',
   ]);
+});
+
+const routesFile = (name: string): string =>
+  readFileSync(new URL(`../${name}`, import.meta.url), 'utf8')
+    .replace(/\r\n/g, '\n')
+    .trimEnd();
+const printed = (off?: string[]): string => route(data, { off }).map(formatRoute).join('\n');
+
+test('golden: routes.txt and routes-nv-off.txt match a fresh run', () => {
+  assert.equal(printed(), routesFile('routes.txt'));
+  assert.equal(printed(['WH-NV']), routesFile('routes-nv-off.txt'));
+});
+
+test('golden: Question 2 with WH-NV and WH-GA off', () => {
+  const partner: Result[] = route(data, { off: ['WH-NV', 'WH-GA'] }).filter((result: Result): boolean => result.destination === 'PARTNER');
+  assert.deepEqual(
+    partner.map((result: Result): string => result.orderNumber),
+    ['#2036', '#2037', '#2039', '#2042', '#2043', '#2045', '#2046', '#2049', '#2052', '#2054', '#2056'],
+  );
+  for (const result of partner.filter((entry: Result): boolean => !['#2037', '#2042', '#2046'].includes(entry.orderNumber)))
+    assert.equal(result.reason, 'no warehouse can take it');
 });
