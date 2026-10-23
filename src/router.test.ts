@@ -312,6 +312,24 @@ test('Validation: warehouse, off and zones codes are checked', () => {
   );
 });
 
+test('Edits: a late edit still merges, with a warning in the note', () => {
+  const edit = (minutes: number): OrderEvent => ({
+    type: 'order_edited',
+    orderNumber: '#1',
+    at: timeAt(minutes),
+    addedLines: [{ sku: 'NW-A', quantity: 1 }],
+  });
+  // WH-NJ has 1 unit. The merged edit makes the order 2 units, so PARTNER proves the late line was merged.
+  const routeWithEdit = (minutes: number): Result =>
+    route(makeData([orderOne('07030', [['NW-A', 1]]), edit(minutes)], [makeWarehouse('WH-NJ', { 'NW-A': [1, 1] })], DEFAULT_ZONES))[0];
+  const late: Result = routeWithEdit(31);
+  assert.equal(late.destination, 'PARTNER');
+  assert.deepEqual(late.notes, ['edit +31 min merged, after the 30-minute window']);
+  const onTime: Result = routeWithEdit(30);
+  assert.equal(onTime.destination, 'PARTNER');
+  assert.deepEqual(onTime.notes, ['edit +30 min merged']);
+});
+
 test('Output: formatRoute', () => {
   const format = (orderNumber: string, destination: string, reason: string, notes: string[] = []): string =>
     formatRoute({ orderNumber, destination, reason, notes });

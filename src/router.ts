@@ -26,6 +26,7 @@ type ZoneByPrefix = Record<string, unknown>;
 type Candidate = { code: string; zone: number; cover: number };
 
 const PRIORITY: string[] = ['WH-NJ', 'WH-GA', 'WH-NV', 'WH-TX'];
+const EDIT_WINDOW_MINUTES: number = 30;
 const DATA_DIRECTORY: string = fileURLToPath(new URL('../natura-wellness-backend-test 2/', import.meta.url));
 
 export function loadData(directory: string = DATA_DIRECTORY): Data {
@@ -88,6 +89,7 @@ function validate(data: Data, options: RouteOptions): void {
 }
 
 // Returns the orders with their edits merged, sorted by created time.
+// An edit later than EDIT_WINDOW_MINUTES still merges, and its note says so.
 function mergeEvents(events: OrderEvent[]): PendingOrder[] {
   const orders: Map<string, PendingOrder> = new Map();
   const seen: Set<string> = new Set();
@@ -121,7 +123,9 @@ function mergeEvents(events: OrderEvent[]): PendingOrder[] {
     }
     seen.add(JSON.stringify(event));
     order.lines.push(...event.addedLines);
-    order.notes.push(`edit +${Math.round((Date.parse(event.at) - order.at) / 60000)} min merged`);
+    const delay: number = Date.parse(event.at) - order.at;
+    const late: string = delay > EDIT_WINDOW_MINUTES * 60000 ? `, after the ${EDIT_WINDOW_MINUTES}-minute window` : '';
+    order.notes.push(`edit +${Math.round(delay / 60000)} min merged${late}`);
   }
   return [...orders.values()].sort((earlier: PendingOrder, later: PendingOrder): number => earlier.at - later.at);
 }

@@ -11,7 +11,7 @@ npm run route
 npm test
 ```
 
-`npm run route` prints one line per order: the order number, the warehouse or PARTNER, and the zone or the reason. `routes.txt` is that output.
+`npm run route` prints one line per order: the order number, the warehouse or PARTNER, and the zone or the reason. `routes.txt` is that output. A note in brackets at the end of a line says what the router fixed or merged. An edit more than 30 minutes after the order still merges, and the note warns about it.
 
 - `routes-nv-off.txt` is the same run with WH-NV off: `npx tsx src/cli.ts --off WH-NV`.
 - `ANSWERS.md` holds the answers to Part B.
