@@ -140,6 +140,14 @@ tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
 .stamp .why { font-size: var(--step--1); color: var(--ink-2); }
 .order .flag { box-shadow: inset 4px 0 0 var(--critical); }
 .order .flag span:last-child { font-size: var(--step--1); color: var(--ink-2); }
+/* Partner decision: one block per order, stacked, so the text wraps at any width */
+.decs { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+.dec { background: var(--surface); padding: 12px 14px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
+.dec-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; }
+.dec-head .who { font: 500 var(--step--1)/1.4 var(--font-mono); }
+.dec-head .what { font: 600 var(--step--1)/1.4 var(--font-body); }
+.dec-row { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; align-items: baseline; font-size: var(--step--1); }
+.dec-row .label { font-size: 0.68rem; }
 
 .rules { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; counter-reset: r; }
 .rules li { counter-increment: r; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 7px 10px; border-radius: 3px; font-size: var(--step--1); color: var(--muted); }
@@ -343,18 +351,32 @@ details summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-2
 
   <section class="col" id="q3">
     <h2>Question 1: where each order ships today</h2>
-    <p>The router uses the rules as given. The ops notes add one fact that changes where an order can ship. WH-NV cannot ship. So this answer reruns the router with WH-NV off. WH-GA is slow, but it still ships everything, so it stays on. Question 2 is a separate decision.</p>
+    <p>The router uses the rules as given. The ops notes add one fact that changes where an order can ship. WH-NV cannot ship. So this answer reruns the router with WH-NV off. WH-GA is slow, but it still ships everything, so it stays on. Question 2 is a separate decision. Below the table: the decision on the three US orders that go to PARTNER.</p>
     <div class="scroll"><table id="q3Table"></table></div>
     <p class="small muted" id="q3Note"></p>
     <div class="callout" id="partnerFlags">
-      <span class="label">Partner flags: the US orders that go to PARTNER</span>
-      <p>The ticket calls PARTNER "our international partner warehouse". The files say nothing about its stock, its prices or whether it takes US addresses. Three US orders go to PARTNER. This page assumes the partner ships two of them. The third cannot ship anywhere as it is.</p>
-      <ul>
-        <li><b>#2046 · NJ, no ZIP. Hold for a person.</b> The router's answer is PARTNER (rule 2), but no carrier can deliver a parcel without a full address, the partner included. Someone must get the ZIP from the customer. If it starts with 070, the only NJ prefix in zones.json, WH-NJ would take the order at zone 1. Any other NJ prefix is not in zones.json, so rule 2 would still send it to PARTNER.</li>
-        <li><b>#2042 · Honolulu, HI 96815. Assumed: the partner ships it.</b> A US address, but prefix 968 is not in zones.json, so no warehouse has a zone for it. Hawaii may be outside the partner's contract, which covers international orders. If the partner ships it, the transit time and the cost are unknown.</li>
-        <li><b>#2056 · Newark, NJ 07047, only with WH-NV off. Assumed: the partner ships it.</b> A US order one zone from WH-NJ. It goes to PARTNER only because WH-GA ran out of VITD and WH-NJ has no MAG. The partner may not hold these SKUs for US orders, and its parcel is probably slower and costs more than one from WH-NJ. The alternative is to hold the order until WH-NJ gets magnesium.</li>
-      </ul>
-      <p class="small muted">In the replay, every US order that goes to PARTNER carries a flag that names the reason: no ZIP, no zone, or no stock. That includes the 8 orders that option 1 in Question 2 would send there.</p>
+      <span class="label">Decision: the three US orders that go to PARTNER</span>
+      <p><b>Assume the partner ships #2042 and #2056, with the risks flagged. #2046 cannot ship anywhere until someone gets the ZIP.</b></p>
+      <p>The ticket calls PARTNER "our international partner warehouse". The files say nothing about its stock, its prices or whether it takes US addresses, so each assumed shipment carries a risk.</p>
+      <div class="decs">
+        <div class="dec">
+          <div class="dec-head"><span class="who"><b>#2042</b> · Honolulu, HI 96815</span><span class="what ok">Ship via the partner (assumed)</span></div>
+          <div class="dec-row"><span class="label">Router</span><span>PARTNER · rule 2: prefix 968 is not in zones.json.</span></div>
+          <div class="dec-row"><span class="label">Risk</span><span>A US address with no zone from any warehouse. Hawaii may be outside the partner's contract, which covers international orders. If the partner ships it, the transit time and the cost are unknown.</span></div>
+        </div>
+        <div class="dec">
+          <div class="dec-head"><span class="who"><b>#2046</b> · NJ, no ZIP</span><span class="what bad">Hold: get the ZIP first</span></div>
+          <div class="dec-row"><span class="label">Router</span><span>PARTNER · rule 2: no ZIP.</span></div>
+          <div class="dec-row"><span class="label">Why</span><span>No carrier can deliver a parcel without a full address, the partner included. Nobody can ship this order as it is.</span></div>
+          <div class="dec-row"><span class="label">Then</span><span>Once the customer gives the ZIP: if it starts with 070, the only NJ prefix in zones.json, WH-NJ takes the order at zone 1. Any other NJ prefix is not in zones.json, so rule 2 sends it to PARTNER again.</span></div>
+        </div>
+        <div class="dec">
+          <div class="dec-head"><span class="who"><b>#2056</b> · Newark, NJ 07047 · only with WH-NV off</span><span class="what ok">Ship via the partner (assumed)</span></div>
+          <div class="dec-row"><span class="label">Router</span><span>PARTNER · rule 7: no warehouse can take it.</span></div>
+          <div class="dec-row"><span class="label">Risk</span><span>A US order one zone from WH-NJ. It goes to PARTNER only because WH-GA ran out of VITD and WH-NJ has no MAG. The partner may not hold these SKUs for US orders, and its parcel is probably slower and costs more than one from WH-NJ. The alternative is to hold it until WH-NJ gets magnesium.</span></div>
+        </div>
+      </div>
+      <p class="small muted">In the replay, every US order that goes to PARTNER carries a flag with the same reason: no ZIP, no zone, or no stock. That includes the 8 orders that option 1 in Question 2 would send there.</p>
     </div>
   </section>
 
@@ -387,10 +409,10 @@ details summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-2
   <section class="wide" id="history">
     <div style="display:grid;gap:12px;max-width:720px">
       <h2>History: every commit and session</h2>
-      <p>main on <a href="https://github.com/MDGF93/raicom-homework" target="_blank" rel="noopener">github.com/MDGF93/raicom-homework</a> holds 18 commits, the one that adds this page included. 12 Claude Code sessions made the first 14; their transcripts are in ai-transcripts/. The session that made the last 4 is not exported. Each hash and session links to GitHub. Times are UTC on Fri Oct 23, 2026.</p>
+      <p>main on <a href="https://github.com/MDGF93/raicom-homework" target="_blank" rel="noopener">github.com/MDGF93/raicom-homework</a> holds 19 commits, the one that adds this page included. 12 Claude Code sessions made the first 14; their transcripts are in ai-transcripts/. The session that made the last 5 is not exported. Each hash and session links to GitHub. Times are UTC on Fri Oct 23, 2026.</p>
     </div>
     <div class="facts">
-      <div><span class="label">Commits on main</span><b>18</b><span class="small muted">with this page's commit</span></div>
+      <div><span class="label">Commits on main</span><b>19</b><span class="small muted">with this page's commit</span></div>
       <div><span class="label">AI sessions</span><b>12 + 1</b><span class="small muted">12 in ai-transcripts/</span></div>
       <div><span class="label">Tests</span><b>25</b><span class="small muted">19 router, 4 golden, 2 args</span></div>
       <div><span class="label">Review findings</span><b>21</b><span class="small muted">all fixed in ca3eade</span></div>
@@ -430,11 +452,12 @@ details summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-2
         <tr><td class="time">09:56</td><td><span class="kind push">Push</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/tree/main" target="_blank" rel="noopener">main</a><span>Fast-forward to eb65af7</span></td><td>main took the work from feature/order-routing with no merge commit, then went to GitHub. The pre-push hook passed.</td><td class="stat">–</td></tr>
         <tr><td class="time">10:33</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/620f898" target="_blank" rel="noopener">620f898</a><span>Add AI conversation transcripts</span></td><td>The 12 sessions as Markdown, with an index, and a link from README.md.<span class="files">ai-transcripts/ (12 sessions + README.md) · README.md</span></td><td class="stat"><span class="add">+10173</span></td></tr>
         <tr><th colspan="5">Page and merge</th></tr>
-        <tr><td class="time">10:40</td><td><span class="kind session">Session</span></td><td class="item"><span class="mono" style="font-weight:600">this session</span><span>Page sync, open points, merge to main</span></td><td>Synced this page to 620f898, reviewed it, fixed the typo below, merged everything to main, then fixed the flag on #2046. Not in ai-transcripts/.</td><td class="stat">–</td></tr>
+        <tr><td class="time">10:40</td><td><span class="kind session">Session</span></td><td class="item"><span class="mono" style="font-weight:600">this session</span><span>Page sync, open points, merge to main</span></td><td>Synced this page to 620f898, reviewed it, fixed the typo below, merged everything to main, then fixed the flag on #2046 and stated the partner decision. Not in ai-transcripts/.</td><td class="stat">–</td></tr>
         <tr><td class="time">10:49</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/56c3bc7" target="_blank" rel="noopener">56c3bc7</a><span>Add the order routing explainer page</span></td><td>The first repo copy of this page, synced to 620f898, and a README line that points to it.<span class="files">docs/natura-order-routing.html · README.md</span></td><td class="stat"><span class="add">+827</span></td></tr>
         <tr><td class="time">11:04</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/572a37c" target="_blank" rel="noopener">572a37c</a><span>Fix the question number in INSTRUCTIONS.md</span></td><td>Question 1 said "question 4" where it meant question 2, a typo from the old numbering.<span class="files">INSTRUCTIONS.md</span></td><td class="stat"><span class="add">+1</span> <span class="del">−1</span></td></tr>
         <tr><td class="time">11:08</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/77f72f0" target="_blank" rel="noopener">77f72f0</a><span>Update the explainer page</span></td><td>The partner flags, the decisions on the open points and the history up to 572a37c. main fast-forwarded to it and went to GitHub.<span class="files">docs/natura-order-routing.html</span></td><td class="stat"><span class="add">+49</span> <span class="del">−23</span></td></tr>
-        <tr><td class="time">–</td><td><span class="kind commit">Commit</span></td><td class="item"><span class="mono" style="font-weight:600">this commit</span><span>Fix the flag on orders with no ZIP</span></td><td>The replay said #2046 could go to the partner. Nobody can ship a parcel without a ZIP. The flag now names the reason: no ZIP, no zone, or no stock.<span class="files">docs/natura-order-routing.html</span></td><td class="stat">–</td></tr>
+        <tr><td class="time">11:32</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/29afc92" target="_blank" rel="noopener">29afc92</a><span>Fix the flag on orders with no ZIP</span></td><td>The replay said #2046 could go to the partner. Nobody can ship a parcel without a ZIP. The flag now names the reason: no ZIP, no zone, or no stock.<span class="files">docs/natura-order-routing.html</span></td><td class="stat"><span class="add">+24</span> <span class="del">−16</span></td></tr>
+        <tr><td class="time">–</td><td><span class="kind commit">Commit</span></td><td class="item"><span class="mono" style="font-weight:600">this commit</span><span>Show the partner decision in Question 1</span></td><td>Question 1 now states the decision: assume the partner ships #2042 and #2056, hold #2046 for the ZIP.<span class="files">docs/natura-order-routing.html</span></td><td class="stat">–</td></tr>
       </tbody>
     </table></div>
     <p class="small muted">This page is docs/natura-order-routing.html in the repo. A commit cannot hold its own hash, so the last row has none.</p>
@@ -445,7 +468,7 @@ details summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-2
     <div style="display:grid;gap:8px">
       <span class="label">Decided</span>
       <ul class="plain">
-        <li>The partner ships US orders. Two orders depend on this: #2042 and, with WH-NV off, #2056. Each carries a flag that says why it might not. #2046 is different: it has no ZIP, so nobody can ship it, the partner included. It needs a person to fix the address. See Question 1.</li>
+        <li>Assume the partner ships #2042 and, with WH-NV off, #2056; the risks are flagged under Question 1. #2046 cannot ship anywhere until someone gets the ZIP from the customer.</li>
         <li>INSTRUCTIONS.md said "question 4" where it meant question 2, a typo from the old numbering. Fixed in 572a37c.</li>
         <li>No order in today's file reaches rule 6. The unit test is enough.</li>
         <li>The replay on this page is a JavaScript copy of the rules, for illustration. It gives the same warehouse, zone and notes as the TypeScript router for all 26 orders in three runs: as given, WH-NV off, and WH-NV and WH-GA off. The input checks exist only in the TypeScript router.</li>
