@@ -1,0 +1,26 @@
+#2031  WH-NJ    zone 1
+#2032  WH-GA    zone 1
+#2033  WH-NJ    zone 3  [ZIP 2134 read as 02134]
+#2034  WH-GA    zone 5, tie-break cover
+#2035  WH-GA    zone 4
+#2036  WH-GA    zone 7
+#2037  PARTNER  international (CA)
+#2038  WH-NJ    zone 8, tie-break cover
+#2039  WH-NJ    zone 1
+#2040  WH-GA    zone 5  [bundle NW-BNDL-ESS expanded]
+#2041  WH-GA    zone 7  [edit +18 min merged]
+#2042  PARTNER  ZIP prefix 968 not in zones
+#2043  WH-GA    zone 8
+#2044  WH-GA    zone 6
+#2045  WH-GA    zone 3  [SKU nw-mag-90 read as NW-MAG-90]
+#2046  PARTNER  no ZIP
+#2047  WH-GA    zone 4
+#2048  WH-NJ    zone 5, tie-break cover
+#2049  WH-GA    zone 4
+#2050  WH-NJ    zone 5
+#2051  WH-GA    zone 7
+#2052  WH-GA    zone 8
+#2053  WH-NJ    zone 2
+#2054  WH-GA    zone 4
+#2055  WH-GA    zone 8, tie-break cover
+#2056  PARTNER  no warehouse can take it  [bundle NW-BNDL-ESS expanded]
