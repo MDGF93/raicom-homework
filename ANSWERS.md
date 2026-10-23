@@ -22,7 +22,7 @@ The output is in `routes-nv-off.txt`. WH-GA is 2 business days behind, but "ever
 
 None of these 7 orders needs a person to decide. Each data problem has one clear reading, and a warehouse can ship each order.
 
-With WH-NV off, 5 more orders change: #2036 → WH-GA, #2038 → WH-NJ, #2043 → WH-GA, #2052 → WH-GA, and #2056 → PARTNER. #2056 is a US order to Newark. It goes to the international partner only because WH-GA runs out of VITD and WH-NJ has no MAG. I would hold #2056 for a person. Someone must also confirm that the partner ships US orders, for #2042 (Honolulu) and #2046 (no ZIP) too.
+With WH-NV off, 5 more orders change: #2036 → WH-GA, #2038 → WH-NJ, #2043 → WH-GA, #2052 → WH-GA, and #2056 → PARTNER. #2056 is a US order to Newark. It goes to the international partner only because WH-GA runs out of VITD and WH-NJ has no MAG. I assume the partner ships it, and #2042 (Honolulu) as well. The files say nothing about the partner's stock, its prices or whether it takes US addresses, so both carry a risk: #2056 is probably slower and costs more from the partner than from WH-NJ after a restock, and Hawaii may be outside the partner's contract, which covers international orders. #2046 has no ZIP, so nobody can ship it, the partner included. Hold it until someone gets the ZIP from the customer.
 
 ## Question 2: WH-GA until Monday
 
