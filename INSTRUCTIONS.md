@@ -36,7 +36,7 @@ Use your Part A results and `ops-notes.md` to prepare answers to these two quest
 
 **Question 1\. Where should each of these orders actually ship from today?**
 
-Answer for the router as it runs today, plus anything in the ops notes that affects where an order can ship. Don't apply your answer to question 4 here; that's a separate decision.
+Answer for the router as it runs today, plus anything in the ops notes that affects where an order can ship. Don't apply your answer to question 2 here; that's a separate decision.
 
 - Orders: \#2033, \#2037, \#2040, \#2041, \#2045, \#2050, \#2051  
 - Choices for each: WH-NJ, WH-GA, WH-NV, WH-TX, Partner warehouse, Hold for a person to decide
