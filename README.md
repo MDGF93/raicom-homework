@@ -15,3 +15,4 @@ npm test
 
 - `routes-nv-off.txt` is the same run with WH-NV off: `npx tsx src/cli.ts --off WH-NV`.
 - `ANSWERS.md` holds the answers to Part B.
+- `ai-transcripts/` holds the Claude Code conversations for this task.
