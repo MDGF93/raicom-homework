@@ -138,6 +138,8 @@ tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
 .stamp { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .stamp .dest { font: 800 var(--step-2)/1 var(--font-display); font-stretch: 75%; padding: 6px 10px; border-radius: 3px; color: var(--on-fill); }
 .stamp .why { font-size: var(--step--1); color: var(--ink-2); }
+.order .flag { box-shadow: inset 4px 0 0 var(--critical); }
+.order .flag span:last-child { font-size: var(--step--1); color: var(--ink-2); }
 
 .rules { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; counter-reset: r; }
 .rules li { counter-increment: r; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 7px 10px; border-radius: 3px; font-size: var(--step--1); color: var(--muted); }
@@ -222,7 +224,7 @@ details summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-2
 <body>
 <div class="page">
   <header class="col hero">
-    <div class="eyebrow">Skills test · Part A and Part B · main at 620f898 on GitHub</div>
+    <div class="eyebrow">Skills test · Part A and Part B · main on github.com/MDGF93/raicom-homework</div>
     <h1>Natura Order Routing</h1>
     <p class="lede">Every order must go to one warehouse. That warehouse must be the closest one that can ship the whole order in one parcel. This page explains the rules, replays today's 26 orders, lists the steps that finish each acceptance criterion and logs every commit.</p>
     <div class="shiplabel" aria-label="Summary">
@@ -306,7 +308,7 @@ details summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-2
         <tr><td class="mono">#2033</td><td class="mono">zip: 2134 (a number)</td><td>Pads it to 02134. Prefix 021. The state MA matches.</td><td>Reads prefix 213, which is unknown, so PARTNER.</td></tr>
         <tr><td class="mono">#2039</td><td class="mono">zip: "07030-1834"</td><td>Uses the first 3 characters: 070.</td><td>A 3-character slice works. A 5-digit check fails.</td></tr>
         <tr><td class="mono">#2040, #2056</td><td class="mono">sku: "NW-BNDL-ESS"</td><td>Expands it to 1 VITD and 1 MAG from catalog.json.</td><td>No warehouse stocks the bundle, so PARTNER.</td></tr>
-        <tr><td class="mono">#2041</td><td class="mono">order_edited +18 min, adds MULTI</td><td>Merges the edit, then routes the order once.</td><td>Routes VITD only, to WH-NV. Then #2050 takes a VITD at WH-GA.</td></tr>
+        <tr><td class="mono">#2041</td><td class="mono">order_edited +18 min, adds MULTI</td><td>Merges the edit, then routes the order once.</td><td>Routes VITD only, to WH-NV zone 2. WH-GA keeps that VITD, so #2050 (2 VITD) fits at WH-GA zone 1 instead of WH-NJ zone 5.</td></tr>
         <tr><td class="mono">#2045</td><td class="mono">sku: "nw-mag-90"</td><td>Changes it to NW-MAG-90.</td><td>Unknown SKU, so PARTNER.</td></tr>
         <tr><td class="mono">#2046</td><td class="mono">zip: ""</td><td>Rule 2: PARTNER.</td><td>Same result.</td></tr>
         <tr><td class="mono">zones.json</td><td class="mono">"_note": "Shipping zone…"</td><td>Skips the key. It is not a warehouse.</td><td>A loop over all keys reads a text value as a zone map.</td></tr>
@@ -344,6 +346,16 @@ details summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-2
     <p>The router uses the rules as given. The ops notes add one fact that changes where an order can ship. WH-NV cannot ship. So this answer reruns the router with WH-NV off. WH-GA is slow, but it still ships everything, so it stays on. Question 2 is a separate decision.</p>
     <div class="scroll"><table id="q3Table"></table></div>
     <p class="small muted" id="q3Note"></p>
+    <div class="callout" id="partnerFlags">
+      <span class="label">Assumption: the partner ships US orders</span>
+      <p>The ticket calls PARTNER "our international partner warehouse". The files say nothing about its stock, its prices or whether it takes US addresses. This page assumes it ships the three US orders below. Each one has a reason it might not.</p>
+      <ul>
+        <li><b>#2042 · Honolulu, HI 96815.</b> A US address, but prefix 968 is not in zones.json, so no warehouse has a zone for it. Hawaii may be outside the partner's contract, which covers international orders. If the partner ships it, the transit time and the cost are unknown.</li>
+        <li><b>#2046 · NJ, no ZIP.</b> No carrier can deliver a parcel without a full address. The partner needs the ZIP first. A person must fix the address, whoever ships it.</li>
+        <li><b>#2056 · Newark, NJ 07047, only with WH-NV off.</b> A US order one zone from WH-NJ. It goes to PARTNER only because WH-GA ran out of VITD and WH-NJ has no MAG. The partner may not hold these SKUs for US orders, and its parcel is probably slower and costs more than one from WH-NJ. The alternative is to hold the order until WH-NJ gets magnesium.</li>
+      </ul>
+      <p class="small muted">The replay marks every US order that goes to PARTNER with the same flag, including the 8 that option 1 in Question 2 would send there.</p>
+    </div>
   </section>
 
   <section class="col" id="q4">
@@ -375,11 +387,11 @@ details summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-2
   <section class="wide" id="history">
     <div style="display:grid;gap:12px;max-width:720px">
       <h2>History: every commit and session</h2>
-      <p>main on <a href="https://github.com/MDGF93/raicom-homework" target="_blank" rel="noopener">github.com/MDGF93/raicom-homework</a> holds 14 commits. The 12 Claude Code sessions that made them are in ai-transcripts/. Each hash and session links to GitHub. Times are UTC on Fri Oct 23, 2026.</p>
+      <p>main on <a href="https://github.com/MDGF93/raicom-homework" target="_blank" rel="noopener">github.com/MDGF93/raicom-homework</a> holds 17 commits, the one that adds this page included. 12 Claude Code sessions made the first 14; their transcripts are in ai-transcripts/. The session that made the last 3 is not exported. Each hash and session links to GitHub. Times are UTC on Fri Oct 23, 2026.</p>
     </div>
     <div class="facts">
-      <div><span class="label">Commits on main</span><b>14</b><span class="small muted">head 620f898</span></div>
-      <div><span class="label">AI sessions</span><b>12</b><span class="small muted">in ai-transcripts/</span></div>
+      <div><span class="label">Commits on main</span><b>17</b><span class="small muted">with this page's commit</span></div>
+      <div><span class="label">AI sessions</span><b>12 + 1</b><span class="small muted">12 in ai-transcripts/</span></div>
       <div><span class="label">Tests</span><b>25</b><span class="small muted">19 router, 4 golden, 2 args</span></div>
       <div><span class="label">Review findings</span><b>21</b><span class="small muted">all fixed in ca3eade</span></div>
     </div>
@@ -415,24 +427,37 @@ details summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-2
         <tr><td class="time">09:23</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/eb65af7" target="_blank" rel="noopener">eb65af7</a><span>Check zones.json keys against PRIORITY</span></td><td>A zones table with an unknown key such as "WH-nj" now stops the run. Before, it skipped WH-NJ for every order with no error.<span class="files">src/router.ts · src/router.test.ts</span></td><td class="stat"><span class="add">+8</span> <span class="del">−1</span></td></tr>
         <tr><th colspan="5">Publish</th></tr>
         <tr><td class="time">09:51</td><td><span class="kind session">Session</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/blob/main/ai-transcripts/2026-10-23-da173695.md" target="_blank" rel="noopener">da173695</a><span>Acceptance criteria review, merge to main and push</span></td><td>Every criterion met except the publish. A hand check of all 26 routes matched.</td><td class="stat">–</td></tr>
-        <tr><td class="time">09:56</td><td><span class="kind push">Push</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/tree/main" target="_blank" rel="noopener">main</a><span>Fast-forward to eb65af7</span></td><td>main took the work from feature/order-routing with no merge commit and went to GitHub. The pre-push hook passed. feature/order-routing stays local.</td><td class="stat">–</td></tr>
-        <tr><td class="time">10:33</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/620f898" target="_blank" rel="noopener">620f898</a><span>Add AI conversation transcripts</span></td><td>The 12 sessions as Markdown, with an index, and a link from README.md. Pushed: this is the head of main.<span class="files">ai-transcripts/ (12 sessions + README.md) · README.md</span></td><td class="stat"><span class="add">+10173</span></td></tr>
+        <tr><td class="time">09:56</td><td><span class="kind push">Push</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/tree/main" target="_blank" rel="noopener">main</a><span>Fast-forward to eb65af7</span></td><td>main took the work from feature/order-routing with no merge commit, then went to GitHub. The pre-push hook passed.</td><td class="stat">–</td></tr>
+        <tr><td class="time">10:33</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/620f898" target="_blank" rel="noopener">620f898</a><span>Add AI conversation transcripts</span></td><td>The 12 sessions as Markdown, with an index, and a link from README.md.<span class="files">ai-transcripts/ (12 sessions + README.md) · README.md</span></td><td class="stat"><span class="add">+10173</span></td></tr>
+        <tr><th colspan="5">Page and merge</th></tr>
+        <tr><td class="time">10:40</td><td><span class="kind session">Session</span></td><td class="item"><span class="mono" style="font-weight:600">this session</span><span>Page sync, open points, merge to main</span></td><td>Synced this page to 620f898, reviewed it, fixed the typo below and merged everything to main. Not in ai-transcripts/.</td><td class="stat">–</td></tr>
+        <tr><td class="time">10:49</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/47a9277" target="_blank" rel="noopener">47a9277</a><span>Add the order routing explainer page</span></td><td>The first repo copy of this page, synced to 620f898, and a README line that points to it.<span class="files">docs/natura-order-routing.html · README.md</span></td><td class="stat"><span class="add">+827</span></td></tr>
+        <tr><td class="time">11:04</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/af13a4c" target="_blank" rel="noopener">af13a4c</a><span>Fix the question number in INSTRUCTIONS.md</span></td><td>Question 1 said "question 4" where it meant question 2, a typo from the old numbering.<span class="files">INSTRUCTIONS.md</span></td><td class="stat"><span class="add">+1</span> <span class="del">−1</span></td></tr>
+        <tr><td class="time">–</td><td><span class="kind commit">Commit</span></td><td class="item"><span class="mono" style="font-weight:600">this commit</span><span>Update the explainer page</span></td><td>This version of the page: the partner flags, the decisions on the open points and the history up to af13a4c. Merged to main by fast-forward and pushed.<span class="files">docs/natura-order-routing.html</span></td><td class="stat">–</td></tr>
       </tbody>
     </table></div>
-    <p class="small muted">This page is also saved in the repo as docs/natura-order-routing.html. The session that saved it is not in ai-transcripts/.</p>
+    <p class="small muted">This page is docs/natura-order-routing.html in the repo. A commit cannot hold its own hash, so the last row has none.</p>
   </section>
 
   <section class="col" id="open">
-    <h2>Open points</h2>
-    <ul class="plain">
-      <li>main on GitHub has every commit. feature/order-routing was not pushed. It stops at eb65af7, and main holds that commit.</li>
-      <li>The booking form asks for the repo link and the AI conversation path: github.com/MDGF93/raicom-homework and ai-transcripts/.</li>
-      <li>INSTRUCTIONS.md now calls the Part B questions 1 and 2, but line 39 still says "question 4". ANSWERS.md uses 1 and 2.</li>
-      <li>The router does not check for edits later than 30 minutes. The data has none.</li>
-      <li>No order in today's file reaches rule 6. Only a unit test covers it.</li>
-      <li>A person must confirm that the partner ships US orders: #2056 with WH-NV off, #2042 (Honolulu) and #2046 (no ZIP).</li>
-      <li>The replay on this page uses a JavaScript copy of the rules, with the same data fixes but without the input checks. The deliverable is the TypeScript router with its tests.</li>
-    </ul>
+    <h2>Decisions and open points</h2>
+    <div style="display:grid;gap:8px">
+      <span class="label">Decided</span>
+      <ul class="plain">
+        <li>The partner ships US orders. The three orders that depend on this carry a flag that says why it might not. See Question 1.</li>
+        <li>INSTRUCTIONS.md said "question 4" where it meant question 2, a typo from the old numbering. Fixed in af13a4c.</li>
+        <li>No order in today's file reaches rule 6. The unit test is enough.</li>
+        <li>The replay on this page is a JavaScript copy of the rules, for illustration. It gives the same warehouse, zone and notes as the TypeScript router for all 26 orders in three runs: as given, WH-NV off, and WH-NV and WH-GA off. The input checks exist only in the TypeScript router.</li>
+        <li>feature/order-routing is a local branch at eb65af7. main holds that commit and everything after it, so there is nothing to push from it.</li>
+      </ul>
+    </div>
+    <div style="display:grid;gap:8px">
+      <span class="label">Still open</span>
+      <ul class="plain">
+        <li>Late edits. The ticket says customers can add items for up to 30 minutes after they order. The router merges every edit, however late, and prints no note. Today's only edit is 18 minutes after its order, so the output is the same either way. A late edit in a future file would change an order in silence. The choices: merge it anyway, merge it and print a note, or stop with an error.</li>
+        <li>Before the call: the booking form takes the repo link, github.com/MDGF93/raicom-homework, and the transcript path, ai-transcripts/. This session is not in that folder.</li>
+      </ul>
+    </div>
   </section>
 </div>
 <div class="tip" id="tip" hidden></div>
@@ -652,7 +677,8 @@ function render() {
     <div><span class="label">Lines in the file</span><ul>${lines}</ul></div>
     ${needs ? `<div><span class="label">Units to ship</span><ul>${needs}</ul></div>` : ''}
     ${r.notes.length ? `<div><span class="label">Data fixes</span><ul class="notes">${r.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul></div>` : ''}
-    <div class="stamp"><span class="dest" style="background:${COLOR[r.dest]}">${r.dest}${r.zone ? ' · zone ' + r.zone : ''}</span><span class="why">Rule ${r.rule}: ${esc(r.reason)}</span></div>`;
+    <div class="stamp"><span class="dest" style="background:${COLOR[r.dest]}">${r.dest}${r.zone ? ' · zone ' + r.zone : ''}</span><span class="why">Rule ${r.rule}: ${esc(r.reason)}</span></div>
+    ${r.dest === 'PARTNER' && String(r.shipTo.country).trim().toUpperCase() === 'US' ? '<div class="flag"><span class="label">Flag</span><span>A US order sent to the international partner. This page assumes the partner ships it. See the partner flags under Question 1.</span></div>' : ''}`;
 
   // Rule list
   const st = ruleStates(r);
@@ -777,7 +803,7 @@ $('#groups').addEventListener('change', e => {
     '#2037': 'The order ships to Canada.',
     '#2040': 'The bundle needs MAG. WH-NJ (zone 2) has no MAG after #2039.',
     '#2041': 'The edit adds MULTI. WH-NV has no MULTI and cannot ship. WH-NJ is zone 8.',
-    '#2045': 'The SKU is lowercase. WH-NJ has no MAG.',
+    '#2045': 'The SKU is lowercase. WH-GA is zone 3, the lowest zone. WH-NJ (zone 4) has no MAG anyway.',
     '#2050': 'WH-GA has 1 VITD after #2041. The order needs 2.',
     '#2051': 'The router picks WH-NV, but WH-NV cannot ship. WH-GA has its last VITD.'
   };
@@ -786,8 +812,8 @@ $('#groups').addEventListener('change', e => {
   $('#q3Table').innerHTML = `<thead><tr><th>Order</th><th>Part A route</th><th>Ships from</th><th>Why</th></tr></thead><tbody>${
     b.map((r, i) => `<tr><td class="mono">${r.orderNumber}</td><td class="mono">${dest(a[i])}</td><td>${r.dest === 'PARTNER' ? 'Partner warehouse' : wh(r.dest) + ' <span class="muted mono">z' + r.zone + '</span>'}</td><td>${why[r.orderNumber]}</td></tr>`).join('')
   }</tbody>`;
-  const moved = nvOff.filter((r, i) => dest(r) !== dest(baseline[i])).map(r => `${r.orderNumber} (${dest(r)})`);
-  $('#q3Note').textContent = `With WH-NV off, these orders also change: ${moved.join(', ')}. #2056 goes to PARTNER because WH-GA runs out of VITD and WH-NJ has no MAG. It is a US order, so ANSWERS.md holds it for a person.`;
+  const moved = nvOff.filter((r, i) => dest(r) !== dest(baseline[i]) && !(r.orderNumber in why)).map(r => `${r.orderNumber} (${dest(r)})`);
+  $('#q3Note').textContent = `With WH-NV off, ${moved.length} more orders change: ${moved.join(', ')}. #2056 goes to PARTNER because WH-GA runs out of VITD and WH-NJ has no MAG. It is a US order to Newark, one zone from WH-NJ.`;
 })();
 
 /* Question 2 */
@@ -802,7 +828,7 @@ $('#groups').addEventListener('change', e => {
     { name: '4 · GA off, NV on', na: true }
   ];
   const chart = (title, key, fmt) => {
-    const W = 360, rowH = 32, left = 128, right = 52, max = Math.max(...rows.filter(r => !r.na).map(r => r[key]));
+    const W = 360, rowH = 32, left = 140, right = 52, max = Math.max(...rows.filter(r => !r.na).map(r => r[key]));
     const H = rows.length * rowH + 6;
     const bars = rows.map((r, i) => {
       const y = i * rowH + 6;
