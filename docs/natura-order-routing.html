@@ -243,7 +243,7 @@ details summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-2
         <ul><li>26 orders, 1 edit</li><li>Tue Oct 20, 2026</li><li>13:00 to 14:15 UTC</li><li>Or PARTNER</li></ul>
       </div>
       <div><span class="label">Status</span>
-        <ul><li>Router built</li><li>25 tests pass</li><li>21 review fixes in</li><li>Pushed: main on GitHub</li></ul>
+        <ul><li>Router built</li><li>26 tests pass</li><li>21 review fixes in</li><li>Pushed: main on GitHub</li></ul>
       </div>
     </div>
   </header>
@@ -338,13 +338,13 @@ details summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-2
       <li>a bundle that contains another bundle</li>
       <li>a code in --off that is not a warehouse, an unknown flag, or --off with no value</li>
     </ul>
-    <p class="small muted">The router skips an exact copy of an event and adds a note. An edit that comes before its order_created in the file still merges. The router also trims and uppercases the country, pads a ZIP string of 1 to 4 digits such as "2134", and reads a zone that is not a number as no zone.</p>
+    <p class="small muted">The router skips an exact copy of an event and adds a note. An edit that comes before its order_created in the file still merges. An edit more than 30 minutes after the order also merges, and its note warns about it. The router also trims and uppercases the country, pads a ZIP string of 1 to 4 digits such as "2134", and reads a zone that is not a number as no zone.</p>
   </section>
 
   <section class="wide" id="checklist">
     <div style="display:grid;gap:12px;max-width:720px">
       <h2>Checklist for each acceptance criterion</h2>
-      <p>Each block quotes the ticket and lists the steps. A step is a red test, a code change or a check of the output. All 16 criteria are done: the 25 tests pass, the output matches the hand trace, main is on GitHub and the AI conversations are in the repo. Your ticks stay in this browser only.</p>
+      <p>Each block quotes the ticket and lists the steps. A step is a red test, a code change or a check of the output. All 16 criteria are done: the 26 tests pass, the output matches the hand trace, main is on GitHub and the AI conversations are in the repo. Your ticks stay in this browser only.</p>
     </div>
     <div id="groups" style="display:grid;gap:16px"></div>
   </section>
@@ -409,12 +409,12 @@ details summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-2
   <section class="wide" id="history">
     <div style="display:grid;gap:12px;max-width:720px">
       <h2>History: every commit and session</h2>
-      <p>main on <a href="https://github.com/MDGF93/raicom-homework" target="_blank" rel="noopener">github.com/MDGF93/raicom-homework</a> holds 19 commits, the one that adds this page included. 12 Claude Code sessions made the first 14; their transcripts are in ai-transcripts/. The session that made the last 5 is not exported. Each hash and session links to GitHub. Times are UTC on Fri Oct 23, 2026.</p>
+      <p>main on <a href="https://github.com/MDGF93/raicom-homework" target="_blank" rel="noopener">github.com/MDGF93/raicom-homework</a> holds 22 commits, the one that adds this page included. 12 Claude Code sessions made the first 14; their transcripts are in ai-transcripts/. The session that made the last 8 is not exported. Each hash and session links to GitHub. Times are UTC on Fri Oct 23, 2026.</p>
     </div>
     <div class="facts">
-      <div><span class="label">Commits on main</span><b>19</b><span class="small muted">with this page's commit</span></div>
+      <div><span class="label">Commits on main</span><b>22</b><span class="small muted">with this page's commit</span></div>
       <div><span class="label">AI sessions</span><b>12 + 1</b><span class="small muted">12 in ai-transcripts/</span></div>
-      <div><span class="label">Tests</span><b>25</b><span class="small muted">19 router, 4 golden, 2 args</span></div>
+      <div><span class="label">Tests</span><b>26</b><span class="small muted">20 router, 4 golden, 2 args</span></div>
       <div><span class="label">Review findings</span><b>21</b><span class="small muted">all fixed in ca3eade</span></div>
     </div>
     <div class="scroll"><table class="log">
@@ -452,12 +452,15 @@ details summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-2
         <tr><td class="time">09:56</td><td><span class="kind push">Push</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/tree/main" target="_blank" rel="noopener">main</a><span>Fast-forward to eb65af7</span></td><td>main took the work from feature/order-routing with no merge commit, then went to GitHub. The pre-push hook passed.</td><td class="stat">–</td></tr>
         <tr><td class="time">10:33</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/620f898" target="_blank" rel="noopener">620f898</a><span>Add AI conversation transcripts</span></td><td>The 12 sessions as Markdown, with an index, and a link from README.md.<span class="files">ai-transcripts/ (12 sessions + README.md) · README.md</span></td><td class="stat"><span class="add">+10173</span></td></tr>
         <tr><th colspan="5">Page and merge</th></tr>
-        <tr><td class="time">10:40</td><td><span class="kind session">Session</span></td><td class="item"><span class="mono" style="font-weight:600">this session</span><span>Page sync, open points, merge to main</span></td><td>Synced this page to 620f898, reviewed it, fixed the typo below, merged everything to main, then fixed the flag on #2046 and stated the partner decision. Not in ai-transcripts/.</td><td class="stat">–</td></tr>
+        <tr><td class="time">10:40</td><td><span class="kind session">Session</span></td><td class="item"><span class="mono" style="font-weight:600">this session</span><span>Page sync, open points, merge to main</span></td><td>Synced this page to 620f898, reviewed it, fixed the typo below, merged everything to main, then fixed the flag on #2046, stated the partner decision, added the late-edit warning and aligned ANSWERS.md. Not in ai-transcripts/.</td><td class="stat">–</td></tr>
         <tr><td class="time">10:49</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/56c3bc7" target="_blank" rel="noopener">56c3bc7</a><span>Add the order routing explainer page</span></td><td>The first repo copy of this page, synced to 620f898, and a README line that points to it.<span class="files">docs/natura-order-routing.html · README.md</span></td><td class="stat"><span class="add">+827</span></td></tr>
         <tr><td class="time">11:04</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/572a37c" target="_blank" rel="noopener">572a37c</a><span>Fix the question number in INSTRUCTIONS.md</span></td><td>Question 1 said "question 4" where it meant question 2, a typo from the old numbering.<span class="files">INSTRUCTIONS.md</span></td><td class="stat"><span class="add">+1</span> <span class="del">−1</span></td></tr>
         <tr><td class="time">11:08</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/77f72f0" target="_blank" rel="noopener">77f72f0</a><span>Update the explainer page</span></td><td>The partner flags, the decisions on the open points and the history up to 572a37c. main fast-forwarded to it and went to GitHub.<span class="files">docs/natura-order-routing.html</span></td><td class="stat"><span class="add">+49</span> <span class="del">−23</span></td></tr>
         <tr><td class="time">11:32</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/29afc92" target="_blank" rel="noopener">29afc92</a><span>Fix the flag on orders with no ZIP</span></td><td>The replay said #2046 could go to the partner. Nobody can ship a parcel without a ZIP. The flag now names the reason: no ZIP, no zone, or no stock.<span class="files">docs/natura-order-routing.html</span></td><td class="stat"><span class="add">+24</span> <span class="del">−16</span></td></tr>
-        <tr><td class="time">–</td><td><span class="kind commit">Commit</span></td><td class="item"><span class="mono" style="font-weight:600">this commit</span><span>Show the partner decision in Question 1</span></td><td>Question 1 now states the decision: assume the partner ships #2042 and #2056, hold #2046 for the ZIP.<span class="files">docs/natura-order-routing.html</span></td><td class="stat">–</td></tr>
+        <tr><td class="time">12:21</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/c044d36" target="_blank" rel="noopener">c044d36</a><span>Show the partner decision in Question 1</span></td><td>Question 1 now states the decision: assume the partner ships #2042 and #2056, hold #2046 for the ZIP.<span class="files">docs/natura-order-routing.html</span></td><td class="stat"><span class="add">+37</span> <span class="del">−14</span></td></tr>
+        <tr><td class="time">12:27</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/a166518" target="_blank" rel="noopener">a166518</a><span>Warn when an edit comes after the 30-minute window</span></td><td>A late edit still merges, and the note on that line says so: "edit +45 min merged, after the 30-minute window". One new test. Today's data has no late edit, so routes.txt is unchanged. Tests go from 25 to 26.<span class="files">src/router.ts · src/router.test.ts · README.md</span></td><td class="stat"><span class="add">+24</span> <span class="del">−2</span></td></tr>
+        <tr><td class="time">12:27</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/1a05da6" target="_blank" rel="noopener">1a05da6</a><span>Align the Question 1 answer with the partner decision</span></td><td>ANSWERS.md now says the same as this page: assume the partner ships #2042 and #2056, hold #2046 for the ZIP.<span class="files">ANSWERS.md</span></td><td class="stat"><span class="add">+1</span> <span class="del">−1</span></td></tr>
+        <tr><td class="time">–</td><td><span class="kind commit">Commit</span></td><td class="item"><span class="mono" style="font-weight:600">this commit</span><span>Sync the page with the late-edit warning</span></td><td>The checklist, the input checks, the decisions and the history now include the late-edit warning and the answers file.<span class="files">docs/natura-order-routing.html</span></td><td class="stat">–</td></tr>
       </tbody>
     </table></div>
     <p class="small muted">This page is docs/natura-order-routing.html in the repo. A commit cannot hold its own hash, so the last row has none.</p>
@@ -468,7 +471,8 @@ details summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-2
     <div style="display:grid;gap:8px">
       <span class="label">Decided</span>
       <ul class="plain">
-        <li>Assume the partner ships #2042 and, with WH-NV off, #2056; the risks are flagged under Question 1. #2046 cannot ship anywhere until someone gets the ZIP from the customer.</li>
+        <li>Assume the partner ships #2042 and, with WH-NV off, #2056; the risks are flagged under Question 1. #2046 cannot ship anywhere until someone gets the ZIP from the customer. ANSWERS.md says the same since 1a05da6.</li>
+        <li>Late edits: the router merges an edit that comes more than 30 minutes after the order and warns in that order's note, for example "edit +45 min merged, after the 30-minute window". Today's data has none, so the output is unchanged. Since a166518.</li>
         <li>INSTRUCTIONS.md said "question 4" where it meant question 2, a typo from the old numbering. Fixed in 572a37c.</li>
         <li>No order in today's file reaches rule 6. The unit test is enough.</li>
         <li>The replay on this page is a JavaScript copy of the rules, for illustration. It gives the same warehouse, zone and notes as the TypeScript router for all 26 orders in three runs: as given, WH-NV off, and WH-NV and WH-GA off. The input checks exist only in the TypeScript router.</li>
@@ -478,7 +482,6 @@ details summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-2
     <div style="display:grid;gap:8px">
       <span class="label">Still open</span>
       <ul class="plain">
-        <li>Late edits. The ticket says customers can add items for up to 30 minutes after they order. The router merges every edit, however late, and prints no note. Today's only edit is 18 minutes after its order, so the output is the same either way. A late edit in a future file would change an order in silence. The choices: merge it anyway, merge it and print a note, or stop with an error.</li>
         <li>Before the call: the booking form takes the repo link, github.com/MDGF93/raicom-homework, and the transcript path, ai-transcripts/. This session is not in that folder.</li>
       </ul>
     </div>
@@ -513,7 +516,8 @@ function routeAll(data, opt = {}) {
       const o = orders.get(e.orderNumber);
       if (!o) continue;
       o.lines.push(...e.addedLines.map(l => ({ ...l, fromEdit: true })));
-      o.notes.push(`edit +${Math.round((Date.parse(e.at) - Date.parse(o.at)) / 60000)} min merged`);
+      const delay = Date.parse(e.at) - Date.parse(o.at);
+      o.notes.push(`edit +${Math.round(delay / 60000)} min merged${delay > 30 * 60000 ? ', after the 30-minute window' : ''}`);
     }
   }
 
@@ -778,8 +782,8 @@ const GROUPS = [
   { title: 'Part A: sequence, edits and data', items: [
     { id: 'seq', title: 'Creation order and stock reservation', quote: 'Route orders in the order they were created. Each routed order reserves its stock, so later orders see less.', test: 'events sorted by at, first order takes the last unit',
       steps: ['Write red tests: events out of order are sorted by created time. The first order takes the last unit.', 'Reserve the stock after each routed order.', 'Check that #2039 takes the last 2 MAG at WH-NJ, so #2040 goes to WH-GA.'] },
-    { id: 'edit', title: 'Edits: route each order once, with everything', quote: 'Customers can add items for up to 30 minutes after ordering (an order_edited event); route each order once, with everything in it.', test: 'edit adds a line, one result per order',
-      steps: ['Write a red test: an edit adds a line, and the router returns one result for the order.', 'Merge every order_edited event into its order before routing.', 'Stop with an error when an edit has no order_created event.', 'Check that #2041 shows WH-GA zone 7 and #2050 shows WH-NJ.'] },
+    { id: 'edit', title: 'Edits: route each order once, with everything', quote: 'Customers can add items for up to 30 minutes after ordering (an order_edited event); route each order once, with everything in it.', test: 'edit adds a line, one result per order, late edit warns',
+      steps: ['Write a red test: an edit adds a line, and the router returns one result for the order.', 'Merge every order_edited event into its order before routing.', 'Stop with an error when an edit has no order_created event.', 'Warn in the note when an edit comes more than 30 minutes after the order. Today\'s data has none.', 'Check that #2041 shows WH-GA zone 7 and #2050 shows WH-NJ.'] },
     { id: 'messy', title: 'Messy data', quote: 'The data is real-world messy.', test: 'ZIP as number, ZIP+4, lowercase SKU, bundle + same SKU',
       steps: ['Write red tests: ZIP as a number, ZIP+4, lowercase SKU, bundle plus the same SKU.', 'Change SKUs to uppercase. Expand bundles from catalog.json.', 'Pad a short ZIP string. Trim and uppercase the country. Skip an exact copy of an event.', 'Check that #2033, #2040, #2045 and #2056 do not go to PARTNER.'] },
     { id: 'out', title: 'Output: one line per order in routes.txt', quote: 'prints one line per order: the order number, the warehouse (or PARTNER), and the reason or zone.', test: 'check: 26 lines',
@@ -787,7 +791,7 @@ const GROUPS = [
   ] },
   { title: 'Checks and delivery', items: [
     { id: 'gold', title: 'Golden test from the hand trace', quote: 'Plan: the full run must match the hand trace of all 26 orders.', test: 'golden: real files → 26 routes',
-      steps: ['Write the golden test from the hand trace before the build.', 'Builder must not change the golden test.', 'Fix the 21 code review findings (ca3eade) and the zones.json key gap (eb65af7).','Run npm run check: tsc, Prettier, ESLint and the 25 tests. Husky runs it before each commit and push.', 'Check that routes.txt and routes-nv-off.txt match a fresh run.'] },
+      steps: ['Write the golden test from the hand trace before the build.', 'Builder must not change the golden test.', 'Fix the 21 code review findings (ca3eade) and the zones.json key gap (eb65af7).','Run npm run check: tsc, Prettier, ESLint and the 26 tests. Husky runs it before each commit and push.', 'Check that routes.txt and routes-nv-off.txt match a fresh run.'] },
     { id: 'pub', title: 'Publish on GitHub', quote: 'Put your script and the output it printed (routes.txt) in a GitHub repo or gist.', test: 'check: main on GitHub has routes.txt',
       steps: ['Commit the work on feature/order-routing.', 'Fast-forward main to feature/order-routing (eb65af7).', 'Push main to github.com/MDGF93/raicom-homework. The pre-push hook runs npm run check first.', 'Check that main on GitHub shows src/, routes.txt and ANSWERS.md.'] },
     { id: 'ai', title: 'AI conversation link', quote: 'If you worked in an editor like Cursor or Copilot, export the chat into your repo and provide the file path.', test: 'check: 12 sessions in ai-transcripts/',
@@ -800,7 +804,7 @@ const GROUPS = [
       steps: ['Run the router with --off WH-NV,WH-GA to show option 1.', 'Write the decision, the numbers and the conditions in ANSWERS.md.'] }
   ] }
 ];
-const KEY = 'natura-routing-checklist-v4';
+const KEY = 'natura-routing-checklist-v5';
 // Criteria with a green test or a checked output. Their steps start ticked until the reader changes a tick.
 const DONE = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'seq', 'edit', 'messy', 'out', 'gold', 'pub', 'ai', 'q3', 'q4'];
 let ticks = null;
