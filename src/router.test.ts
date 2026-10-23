@@ -301,11 +301,15 @@ test('Bundles: one note per bundle, lowercase components work, nested bundles an
   assert.throws(() => routeOne(orderOne('07030', []), [njWarehouse()]), /#1 has no items/);
 });
 
-test('Validation: warehouse and off codes are checked', () => {
+test('Validation: warehouse, off and zones codes are checked', () => {
   const order: OrderEvent = orderOne('07030', [['NW-A', 1]]);
   assert.throws(() => routeOne(order, [njWarehouse()], DEFAULT_ZONES, [], { off: ['wh-nj'] }), /wh-nj/);
   assert.throws(() => routeOne(order, [makeWarehouse('WH-OH', NW_A_STOCK)]), /WH-OH/);
   assert.throws(() => routeOne(order, [njWarehouse(), njWarehouse()]), /WH-NJ/);
+  assert.throws(
+    () => routeOne(order, [njWarehouse()], { ...DEFAULT_ZONES, 'WH-nj': { '070': 1 } }),
+    /zones table WH-nj is not in PRIORITY/,
+  );
 });
 
 test('Output: formatRoute', () => {

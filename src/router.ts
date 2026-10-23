@@ -72,6 +72,9 @@ function validate(data: Data, options: RouteOptions): void {
     }
     codes.push(warehouse.code);
   }
+  for (const [code, table] of Object.entries(data.zones)) {
+    if (table !== null && typeof table === 'object' && !PRIORITY.includes(code)) throw new Error(`zones table ${code} is not in PRIORITY`);
+  }
   for (const code of options.off ?? []) {
     if (!codes.includes(code)) throw new Error(`--off takes warehouse codes from: ${codes.join(',')} (got ${code})`);
   }
