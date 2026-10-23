@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<title>Natura Order Routing</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one 720px reading column. The demos break out to 1080px. The header is a shipping label. */
+:root {
+  --bg: #f2f3f5;
+  --surface: #fcfcfb;
+  --ink: #15191f;
+  --ink-2: #4b5260;
+  --muted: #727988;
+  --rule: #d8dce3;
+  --hl: #fff0a8;
+  --zone-ink: #1d2733;
+  --on-fill: #0b0b0b;
+  --wh-nj: #2a78d6;
+  --wh-ga: #eb6834;
+  --wh-nv: #1baf7a;
+  --wh-tx: #eda100;
+  --partner: #a3a19a;
+  --good: #0ca30c;
+  --good-text: #006300;
+  --critical: #d03b3b;
+  --critical-text: #b0302f;
+  --font-display: "Archivo", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  --step--1: 0.8125rem;
+  --step-0: 1rem;
+  --step-1: 1.25rem;
+  --step-2: 1.75rem;
+  --step-3: clamp(2.25rem, 6vw, 3.5rem);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1115; --surface: #171a1f; --ink: #eceef2; --ink-2: #b7bdc8; --muted: #8a909c; --rule: #2b3038;
+    --hl: #3d3616; --zone-ink: #d9e0ea; --on-fill: #0b0b0b;
+    --wh-nj: #3987e5; --wh-ga: #d95926; --wh-nv: #199e70; --wh-tx: #c98500; --partner: #7c7a73;
+    --good-text: #3cc23c; --critical-text: #f07474;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1115; --surface: #171a1f; --ink: #eceef2; --ink-2: #b7bdc8; --muted: #8a909c; --rule: #2b3038;
+  --hl: #3d3616; --zone-ink: #d9e0ea; --on-fill: #0b0b0b;
+  --wh-nj: #3987e5; --wh-ga: #d95926; --wh-nv: #199e70; --wh-tx: #c98500; --partner: #7c7a73;
+  --good-text: #3cc23c; --critical-text: #f07474;
+  color-scheme: dark;
+}
+
+body { background: var(--bg); color: var(--ink); font: 400 var(--step-0)/1.6 var(--font-body); }
+.page { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 40px 80px; display: grid; gap: 56px; }
+.col { width: 100%; max-width: 720px; margin-inline: auto; min-width: 0; }
+.wide { width: 100%; max-width: 1080px; margin-inline: auto; min-width: 0; }
+section { display: grid; gap: 16px; }
+/* Grid tracks default to the content width. A minmax(0, 1fr) track keeps wide tables inside their scroll boxes. */
+.page, section, .hero, .replay, .stage > div, .group, .order, .chart, .callout { grid-template-columns: minmax(0, 1fr); }
+h1, h2, h3 { font-family: var(--font-display); font-stretch: 78%; line-height: 1.1; text-wrap: balance; margin: 0; }
+h1 { font-size: var(--step-3); font-weight: 800; letter-spacing: -0.01em; }
+h2 { font-size: var(--step-2); font-weight: 750; }
+h3 { font-size: var(--step-1); font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+.eyebrow, .label { font: 600 0.75rem/1.2 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+code, .mono { font-family: var(--font-mono); font-size: 0.92em; }
+.muted { color: var(--ink-2); }
+.small { font-size: var(--step--1); }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* Shipping-label header */
+.shiplabel { border: 3px solid var(--ink); background: var(--surface); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.shiplabel > div { padding: 14px 16px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.shiplabel > div + div { border-left: 1px solid var(--ink); }
+.shiplabel ul { list-style: none; margin: 0; padding: 0; font: 500 var(--step--1)/1.5 var(--font-mono); }
+.shiplabel .off { color: var(--muted); text-decoration: line-through; }
+.hero { display: grid; gap: 20px; }
+.hero .lede { font-size: var(--step-1); line-height: 1.45; color: var(--ink-2); max-width: 60ch; }
+
+.facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+.facts > div { background: var(--surface); padding: 12px 14px; display: grid; gap: 2px; }
+.facts b { font: 700 var(--step-1)/1.2 var(--font-display); font-stretch: 85%; }
+
+.scroll { overflow-x: auto; border: 1px solid var(--rule); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: var(--step--1); font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+thead th { font: 600 0.7rem/1.2 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
+
+/* Zone chart */
+.zones td.z { text-align: center; font: 600 var(--step--1)/1 var(--font-mono); padding: 10px 6px; min-width: 44px; }
+.zones th.pfx { text-align: center; }
+.zones th.pfx span { display: block; font: 400 0.68rem/1.3 var(--font-body); letter-spacing: 0; text-transform: none; color: var(--muted); }
+.zones tr.disabled td.z { background-image: repeating-linear-gradient(135deg, transparent 0 5px, color-mix(in oklab, var(--surface) 55%, transparent) 5px 7px); }
+.zones .count td { text-align: center; font: 500 var(--step--1)/1 var(--font-mono); color: var(--ink-2); }
+.wh { display: inline-flex; align-items: center; gap: 8px; font: 600 var(--step--1)/1.2 var(--font-mono); white-space: nowrap; }
+.sw { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+.tag { font: 500 0.68rem/1 var(--font-mono); padding: 3px 6px; border: 1px solid var(--rule); border-radius: 3px; color: var(--ink-2); white-space: nowrap; }
+
+/* Replay */
+.replay { border: 1px solid var(--rule); background: var(--surface); display: grid; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--rule); }
+.controls label { display: inline-flex; gap: 8px; align-items: center; font-size: var(--step--1); cursor: pointer; }
+.controls input { accent-color: var(--ink); width: 16px; height: 16px; }
+.btn { font: 600 var(--step--1)/1 var(--font-mono); padding: 8px 12px; border: 1px solid var(--ink); background: var(--surface); color: var(--ink); border-radius: 4px; cursor: pointer; }
+.btn:hover { background: var(--ink); color: var(--surface); }
+.btn:disabled { opacity: 0.4; cursor: default; background: var(--surface); color: var(--ink); }
+.nav { display: inline-flex; gap: 6px; margin-left: auto; }
+.strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 2px; padding: 12px 16px; border-bottom: 1px solid var(--rule); }
+.cell { border: 0; border-radius: 3px; padding: 6px 2px 5px; display: grid; gap: 1px; justify-items: center; cursor: pointer; color: var(--on-fill); font: 600 0.72rem/1.15 var(--font-mono); position: relative; }
+.cell .n { font-size: 0.8rem; }
+.cell.cur { outline: 3px solid var(--ink); outline-offset: 1px; z-index: 1; }
+.cell.changed::after { content: ""; position: absolute; top: 3px; right: 3px; width: 6px; height: 6px; border-radius: 50%; background: var(--on-fill); box-shadow: 0 0 0 1.5px var(--surface); }
+.strip-note { padding: 8px 16px; border-bottom: 1px solid var(--rule); font-size: var(--step--1); color: var(--ink-2); display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; }
+.legend { display: inline-flex; gap: 12px; flex-wrap: wrap; }
+.legend span { display: inline-flex; gap: 6px; align-items: center; font: 500 0.72rem/1 var(--font-mono); color: var(--ink-2); }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink); display: inline-block; }
+.stage { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); }
+.stage > * { padding: 16px; min-width: 0; }
+.stage > * + * { border-left: 1px solid var(--rule); }
+
+.order { border: 2px solid var(--ink); display: grid; }
+.order > div { padding: 10px 12px; display: grid; gap: 4px; }
+.order > div + div { border-top: 1px solid var(--ink); }
+.order .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.order .num { font: 800 var(--step-2)/1 var(--font-display); font-stretch: 75%; }
+.order ul { margin: 0; padding: 0; list-style: none; font: 500 var(--step--1)/1.6 var(--font-mono); }
+.order .edit { color: var(--ink-2); }
+.notes li { color: var(--ink-2); }
+.notes li::before { content: "fix · "; color: var(--muted); }
+.stamp { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.stamp .dest { font: 800 var(--step-2)/1 var(--font-display); font-stretch: 75%; padding: 6px 10px; border-radius: 3px; color: var(--on-fill); }
+.stamp .why { font-size: var(--step--1); color: var(--ink-2); }
+
+.rules { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; counter-reset: r; }
+.rules li { counter-increment: r; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 7px 10px; border-radius: 3px; font-size: var(--step--1); color: var(--muted); }
+.rules li::before { content: counter(r); font: 700 var(--step--1)/1 var(--font-mono); }
+.rules li .st { font: 500 0.68rem/1 var(--font-mono); text-transform: uppercase; letter-spacing: 0.06em; }
+.rules li[data-state="pass"] { color: var(--ink-2); }
+.rules li[data-state="hit"] { background: var(--hl); color: var(--ink); font-weight: 600; }
+.cands td.res { white-space: nowrap; }
+.cands tr.win td { font-weight: 600; }
+.ok { color: var(--good-text); }
+.bad { color: var(--critical-text); }
+.stock td { white-space: nowrap; }
+.bar { height: 4px; background: var(--rule); border-radius: 2px; margin-top: 4px; width: 72px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--ink-2); border-radius: 2px; }
+.delta { color: var(--critical-text); font-weight: 600; margin-left: 4px; }
+.subhead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+
+/* Checklist */
+.group { display: grid; gap: 0; border: 1px solid var(--rule); background: var(--surface); }
+.group > h3 { padding: 12px 16px; border-bottom: 1px solid var(--rule); font-size: var(--step-0); font-stretch: 90%; display: flex; justify-content: space-between; gap: 8px; }
+.ac { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 8px 24px; padding: 14px 16px; }
+.ac + .ac { border-top: 1px solid var(--rule); }
+.ac .t { display: grid; gap: 6px; align-content: start; }
+.ac .t b { font-weight: 600; }
+.ac blockquote { margin: 0; font-size: var(--step--1); color: var(--ink-2); font-style: italic; }
+.ac ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.ac li label { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; font-size: var(--step--1); cursor: pointer; }
+.ac li input { accent-color: var(--ink); margin: 3px 0 0; width: 15px; height: 15px; }
+.ac li input:checked + span { color: var(--muted); text-decoration: line-through; }
+.pill { font: 600 0.68rem/1 var(--font-mono); text-transform: uppercase; letter-spacing: 0.06em; padding: 4px 7px; border-radius: 3px; border: 1px solid currentColor; justify-self: start; white-space: nowrap; }
+.pill.todo { color: var(--muted); }
+.pill.doing { color: var(--ink); }
+.pill.done { color: var(--good-text); }
+
+/* Part B */
+.callout { border-left: 4px solid var(--ink); background: var(--surface); padding: 14px 18px; display: grid; gap: 10px; }
+.callout ul, .plain { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+.charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.chart { border: 1px solid var(--rule); background: var(--surface); padding: 14px 16px; display: grid; gap: 8px; min-width: 0; }
+.chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+.chart text { font-family: var(--font-mono); font-size: 12px; fill: var(--ink-2); }
+.chart text.v { fill: var(--ink); font-weight: 600; }
+.chart .bar-n { fill: var(--muted); }
+.chart .bar-pick { fill: var(--ink); }
+.chart .base { stroke: var(--rule); stroke-width: 1; }
+details summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-2); }
+.tip { position: fixed; z-index: 20; pointer-events: none; background: var(--ink); color: var(--surface); font: 500 0.75rem/1.4 var(--font-mono); padding: 6px 8px; border-radius: 4px; max-width: 280px; }
+
+/* History: a manifest of every commit and session, in time order */
+.log { min-width: 680px; }
+.log tbody th { font: 700 var(--step--1)/1.2 var(--font-display); font-stretch: 90%; letter-spacing: 0.02em; color: var(--ink); background: var(--bg); padding-block: 10px 6px; }
+.log td.time { white-space: nowrap; font-family: var(--font-mono); color: var(--ink-2); }
+.log td.item { min-width: 200px; }
+.log td.item a { font: 600 var(--step--1)/1.4 var(--font-mono); }
+.log td.item span { display: block; }
+.log td.stat { white-space: nowrap; font-family: var(--font-mono); text-align: right; }
+.log .kind { font: 600 0.68rem/1 var(--font-mono); text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 6px; border-radius: 3px; border: 1px solid currentColor; white-space: nowrap; display: inline-block; }
+.log .kind.commit { color: var(--ink); }
+.log .kind.session { color: var(--muted); }
+.log .kind.push { color: var(--good-text); }
+.log .add { color: var(--good-text); }
+.log .del { color: var(--critical-text); }
+.log .files { display: block; color: var(--ink-2); font: 500 0.72rem/1.5 var(--font-mono); margin-top: 2px; }
+
+@media (max-width: 860px) {
+  .stage { grid-template-columns: minmax(0, 1fr); }
+  .stage > * + * { border-left: 0; border-top: 1px solid var(--rule); }
+  .ac { grid-template-columns: minmax(0, 1fr); }
+  .charts { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 620px) {
+  .shiplabel { grid-template-columns: minmax(0, 1fr); }
+  .shiplabel > div + div { border-left: 0; border-top: 1px solid var(--ink); }
+  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .nav { margin-left: 0; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cell, .btn { transition: background-color 120ms, outline-color 120ms; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="col hero">
+    <div class="eyebrow">Skills test · Part A and Part B · main at 620f898 on GitHub</div>
+    <h1>Natura Order Routing</h1>
+    <p class="lede">Every order must go to one warehouse. That warehouse must be the closest one that can ship the whole order in one parcel. This page explains the rules, replays today's 26 orders, lists the steps that finish each acceptance criterion and logs every commit.</p>
+    <div class="shiplabel" aria-label="Summary">
+      <div><span class="label">Ship from</span>
+        <ul><li>WH-NJ Edison, NJ</li><li>WH-GA Atlanta, GA</li><li>WH-NV Reno, NV</li><li class="off">WH-TX Dallas, TX</li></ul>
+      </div>
+      <div><span class="label">Ship to</span>
+        <ul><li>26 orders, 1 edit</li><li>Tue Oct 20, 2026</li><li>13:00 to 14:15 UTC</li><li>Or PARTNER</li></ul>
+      </div>
+      <div><span class="label">Status</span>
+        <ul><li>Router built</li><li>25 tests pass</li><li>21 review fixes in</li><li>Pushed: main on GitHub</li></ul>
+      </div>
+    </div>
+  </header>
+
+  <section class="col" id="job">
+    <h2>The job</h2>
+    <p>Natura Wellness sells 3 supplements and 1 bundle. It ships across the US from 4 warehouses. The router reads today's order events and picks one destination for each order. The destination is a warehouse, or PARTNER, the international partner warehouse.</p>
+    <p>Two things make the job harder than a table lookup. First, each routed order reserves its stock, so an early order can change where a later order goes. Second, the data is messy. One ZIP is a number, one SKU is lowercase, two orders use a bundle SKU that no warehouse stocks, and one edit adds an item 18 minutes after the order.</p>
+    <div class="facts">
+      <div><span class="label">Orders</span><b>26</b><span class="small muted">plus 1 edit event</span></div>
+      <div><span class="label">Warehouses</span><b>4</b><span class="small muted">WH-TX is disabled</span></div>
+      <div><span class="label">ZIP prefixes</span><b>13</b><span class="small muted">in zones.json</span></div>
+      <div><span class="label">Products</span><b>3 + 1</b><span class="small muted">the bundle is 2 of them</span></div>
+    </div>
+  </section>
+
+  <section class="wide" id="zones">
+    <div class="col" style="display:grid;gap:12px;max-width:720px;margin-inline:0">
+      <h2>Distance: the zone chart</h2>
+      <p>zones.json gives a shipping zone from each warehouse to each 3-digit ZIP prefix. Zone 1 is the closest, cheapest and fastest. Zone 8 is the farthest. The strongest shade is zone 1. The last row counts today's orders for each prefix.</p>
+    </div>
+    <div class="scroll"><table class="zones" id="zoneTable"></table></div>
+    <p class="small muted">Prefix 968 (Honolulu, order #2042) is not in zones.json, so rule 2 sends that order to PARTNER. WH-TX has zones but is disabled, so rule 3 never picks it.</p>
+  </section>
+
+  <section class="wide" id="replay">
+    <div style="display:grid;gap:12px;max-width:720px">
+      <h2>The seven rules, replayed</h2>
+      <p>The router checks the rules in sequence for each order, in creation order. Pick an order to see the rule that decided it, the warehouses that could take it, and the stock that is left after it. The page starts on #2040. Its closest warehouse has no magnesium left, because #2039 took the last 2 units.</p>
+    </div>
+    <div class="replay">
+      <div class="controls">
+        <label><input type="checkbox" id="optClean" checked> Clean the messy data</label>
+        <label><input type="checkbox" id="optNv"> WH-NV off (water damage)</label>
+        <label><input type="checkbox" id="optGa"> WH-GA off (Marco's request)</label>
+        <span class="nav"><button class="btn" id="prev" type="button">← Previous</button><button class="btn" id="next" type="button">Next →</button></span>
+      </div>
+      <div class="strip" id="strip" aria-label="All orders"></div>
+      <div class="strip-note"><span id="changeNote"></span><span class="legend" id="legend"></span></div>
+      <div class="stage">
+        <div style="display:grid;gap:16px;align-content:start">
+          <div class="order" id="orderCard"></div>
+          <div>
+            <div class="subhead"><span class="label">Rules for this order</span></div>
+            <ol class="rules" id="ruleList"></ol>
+          </div>
+        </div>
+        <div style="display:grid;gap:20px;align-content:start">
+          <div>
+            <div class="subhead"><span class="label">Which warehouse can take it</span><span class="small muted">cover uses the stock before this order</span></div>
+            <div class="scroll" id="candWrap"></div>
+          </div>
+          <div>
+            <div class="subhead"><span class="label">Stock after this order</span><span class="small muted">units left · days of cover</span></div>
+            <div class="scroll" id="stockWrap"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wide" id="messy">
+    <div style="display:grid;gap:12px;max-width:720px">
+      <h2>Messy data</h2>
+      <p>Each row is a value in the files that a strict reading gets wrong. Clear "Clean the messy data" in the replay to see the naive results.</p>
+    </div>
+    <div class="scroll"><table>
+      <thead><tr><th>Where</th><th>Raw value</th><th>The router</th><th>A naive router</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">#2033</td><td class="mono">zip: 2134 (a number)</td><td>Pads it to 02134. Prefix 021. The state MA matches.</td><td>Reads prefix 213, which is unknown, so PARTNER.</td></tr>
+        <tr><td class="mono">#2039</td><td class="mono">zip: "07030-1834"</td><td>Uses the first 3 characters: 070.</td><td>A 3-character slice works. A 5-digit check fails.</td></tr>
+        <tr><td class="mono">#2040, #2056</td><td class="mono">sku: "NW-BNDL-ESS"</td><td>Expands it to 1 VITD and 1 MAG from catalog.json.</td><td>No warehouse stocks the bundle, so PARTNER.</td></tr>
+        <tr><td class="mono">#2041</td><td class="mono">order_edited +18 min, adds MULTI</td><td>Merges the edit, then routes the order once.</td><td>Routes VITD only, to WH-NV. Then #2050 takes a VITD at WH-GA.</td></tr>
+        <tr><td class="mono">#2045</td><td class="mono">sku: "nw-mag-90"</td><td>Changes it to NW-MAG-90.</td><td>Unknown SKU, so PARTNER.</td></tr>
+        <tr><td class="mono">#2046</td><td class="mono">zip: ""</td><td>Rule 2: PARTNER.</td><td>Same result.</td></tr>
+        <tr><td class="mono">zones.json</td><td class="mono">"_note": "Shipping zone…"</td><td>Skips the key. It is not a warehouse.</td><td>A loop over all keys reads a text value as a zone map.</td></tr>
+        <tr><td class="mono">WH-TX</td><td class="mono">dailyVelocity: 0</td><td>Cover has no limit. WH-TX is disabled, so this has no effect today.</td><td>Division by zero gives Infinity or NaN.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="small muted">The router also checks the input before it routes. Today's files pass every check. Each of these stops the run with an error that names the order, the warehouse, the bundle or the flag:</p>
+    <ul class="plain small muted">
+      <li>an event with no order number, or a time that is not a date</li>
+      <li>an unknown event type, such as order_cancelled</li>
+      <li>an order with no ship-to address or no country</li>
+      <li>a line with no SKU, or a quantity that is not a positive whole number</li>
+      <li>an order with no items</li>
+      <li>an edit for an order that was never created</li>
+      <li>a second order_created with different content</li>
+      <li>a warehouse code that is not in the priority list, or that appears twice</li>
+      <li>a warehouse with no inventory, or an inventory row without numbers</li>
+      <li>a table in zones.json whose key is not a warehouse code, such as "WH-nj"</li>
+      <li>a bundle that contains another bundle</li>
+      <li>a code in --off that is not a warehouse, an unknown flag, or --off with no value</li>
+    </ul>
+    <p class="small muted">The router skips an exact copy of an event and adds a note. An edit that comes before its order_created in the file still merges. The router also trims and uppercases the country, pads a ZIP string of 1 to 4 digits such as "2134", and reads a zone that is not a number as no zone.</p>
+  </section>
+
+  <section class="wide" id="checklist">
+    <div style="display:grid;gap:12px;max-width:720px">
+      <h2>Checklist for each acceptance criterion</h2>
+      <p>Each block quotes the ticket and lists the steps. A step is a red test, a code change or a check of the output. All 16 criteria are done: the 25 tests pass, the output matches the hand trace, main is on GitHub and the AI conversations are in the repo. Your ticks stay in this browser only.</p>
+    </div>
+    <div id="groups" style="display:grid;gap:16px"></div>
+  </section>
+
+  <section class="col" id="q3">
+    <h2>Question 1: where each order ships today</h2>
+    <p>The router uses the rules as given. The ops notes add one fact that changes where an order can ship. WH-NV cannot ship. So this answer reruns the router with WH-NV off. WH-GA is slow, but it still ships everything, so it stays on. Question 2 is a separate decision.</p>
+    <div class="scroll"><table id="q3Table"></table></div>
+    <p class="small muted" id="q3Note"></p>
+  </section>
+
+  <section class="col" id="q4">
+    <h2>Question 2: WH-GA until Monday</h2>
+    <div class="callout">
+      <span class="label">Decision</span>
+      <p><b>Ship option 3: route away from WH-GA only when another warehouse is within one zone of it.</b></p>
+      <ul>
+        <li>WH-GA picks about 2 business days late. For 70% of its orders, the next warehouse adds about 2 days of transit. Those customers gain no time, and each parcel costs $2.35 more.</li>
+        <li>For the other 30%, the next warehouse adds about half a day. Those customers get their order about 1.5 days sooner, for $0.40 more.</li>
+        <li id="q4Partner">Options 1 and 4 fail with today's network.</li>
+        <li>Option 4 sends orders to a warehouse with water damage.</li>
+      </ul>
+      <span class="label">Conditions</span>
+      <ul>
+        <li>Set WH-NV to disabled in the router first. IT has not changed it yet.</li>
+        <li>Make the rule end on Monday without a new deploy.</li>
+        <li>Priya's 30% probably counts WH-NV as an alternative. The real share is probably lower.</li>
+      </ul>
+    </div>
+    <div class="charts" id="q4Charts"></div>
+    <p class="small muted">Daily effect from Priya's numbers: about 420 WH-GA orders a day, so 294 orders at 70% and 126 orders at 30%. The chart assumes that 2 business days of picking delay equal about 2 days in transit.</p>
+    <details>
+      <summary>Show the numbers as a table</summary>
+      <div class="scroll" style="margin-top:8px"><table id="q4Table"></table></div>
+    </details>
+  </section>
+
+  <section class="wide" id="history">
+    <div style="display:grid;gap:12px;max-width:720px">
+      <h2>History: every commit and session</h2>
+      <p>main on <a href="https://github.com/MDGF93/raicom-homework" target="_blank" rel="noopener">github.com/MDGF93/raicom-homework</a> holds 14 commits. The 12 Claude Code sessions that made them are in ai-transcripts/. Each hash and session links to GitHub. Times are UTC on Fri Oct 23, 2026.</p>
+    </div>
+    <div class="facts">
+      <div><span class="label">Commits on main</span><b>14</b><span class="small muted">head 620f898</span></div>
+      <div><span class="label">AI sessions</span><b>12</b><span class="small muted">in ai-transcripts/</span></div>
+      <div><span class="label">Tests</span><b>25</b><span class="small muted">19 router, 4 golden, 2 args</span></div>
+      <div><span class="label">Review findings</span><b>21</b><span class="small muted">all fixed in ca3eade</span></div>
+    </div>
+    <div class="scroll"><table class="log">
+      <thead><tr><th>UTC</th><th>Type</th><th>Item</th><th>What changed</th><th>Lines</th></tr></thead>
+      <tbody>
+        <tr><th colspan="5">Setup</th></tr>
+        <tr><td class="time">01:38</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/4967b76" target="_blank" rel="noopener">4967b76</a><span>Initial commit</span></td><td>The empty repo.<span class="files">LICENSE · README.md · .gitattributes</span></td><td class="stat"><span class="add">+25</span></td></tr>
+        <tr><td class="time">01:45</td><td><span class="kind session">Session</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/blob/main/ai-transcripts/2026-10-23-0dd3e0c6.md" target="_blank" rel="noopener">0dd3e0c6</a><span>Plan, first commit, explainer</span></td><td>The plan, the hand trace of the 26 orders and the first version of this page.</td><td class="stat">–</td></tr>
+        <tr><td class="time">02:03</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/f2d9990" target="_blank" rel="noopener">f2d9990</a><span>First commit. Original data as provided by Raicom</span></td><td>The task and the five data files, unchanged.<span class="files">INSTRUCTIONS.md · orders.json · warehouses.json · zones.json · catalog.json · ops-notes.md</span></td><td class="stat"><span class="add">+573</span></td></tr>
+        <tr><td class="time">02:20</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/7e73ace" target="_blank" rel="noopener">7e73ace</a><span>Update to INSTRUCTIONS.md</span></td><td>Part B questions 3 and 4 are now 1 and 2.<span class="files">INSTRUCTIONS.md</span></td><td class="stat"><span class="add">+18</span> <span class="del">−18</span></td></tr>
+        <tr><th colspan="5">Build</th></tr>
+        <tr><td class="time">02:23</td><td><span class="kind session">Session</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/blob/main/ai-transcripts/2026-10-23-061b076a.md" target="_blank" rel="noopener">061b076a</a><span>Build, tests, Part B, first review</span></td><td>The router, 11 unit tests, 2 golden tests, routes.txt and ANSWERS.md.</td><td class="stat">–</td></tr>
+        <tr><td class="time">07:30</td><td><span class="kind session">Session</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/blob/main/ai-transcripts/2026-10-23-aeb2e883.md" target="_blank" rel="noopener">aeb2e883</a><span>Missing @types/node</span></td><td>Fixed TS2591 (no types for node:test) with @types/node and the node types in tsconfig.json.</td><td class="stat">–</td></tr>
+        <tr><td class="time">07:38</td><td><span class="kind session">Session</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/blob/main/ai-transcripts/2026-10-23-cf34944a.md" target="_blank" rel="noopener">cf34944a</a><span>Missing @types/node, resumed</span></td><td>Removed <code>products: []</code> from the test fixture. 13 of 13 tests pass.</td><td class="stat">–</td></tr>
+        <tr><td class="time">07:40</td><td><span class="kind session">Session</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/blob/main/ai-transcripts/2026-10-23-4b8de40b.md" target="_blank" rel="noopener">4b8de40b</a><span>Variable naming clarity</span></td><td>Full names instead of single letters such as <code>wh</code>, and an explicit type on every variable. A strict tsc run found no errors.</td><td class="stat">–</td></tr>
+        <tr><td class="time">08:03</td><td><span class="kind session">Session</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/blob/main/ai-transcripts/2026-10-23-80a552f3.md" target="_blank" rel="noopener">80a552f3</a><span>Git hooks, first try</span></td><td>Stopped early.</td><td class="stat">–</td></tr>
+        <tr><td class="time">08:03</td><td><span class="kind session">Session</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/blob/main/ai-transcripts/2026-10-23-d9a0825f.md" target="_blank" rel="noopener">d9a0825f</a><span>Git hooks for Prettier, ESLint and tests</span></td><td>Husky hooks and a one-time Prettier format of src/.</td><td class="stat">–</td></tr>
+        <tr><td class="time">08:13</td><td><span class="kind session">Session</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/blob/main/ai-transcripts/2026-10-23-59708da9.md" target="_blank" rel="noopener">59708da9</a><span>Splitting unstaged files into commits</span></td><td>The 8 commits below. The hook ran <code>npm run check</code> on each one, with no <code>--no-verify</code>.</td><td class="stat">–</td></tr>
+        <tr><td class="time">08:14</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/8ec0ca4" target="_blank" rel="noopener">8ec0ca4</a><span>Add gitignore files</span></td><td>Ignore node_modules/ and the IDE files.<span class="files">.gitignore · .idea/.gitignore</span></td><td class="stat"><span class="add">+11</span></td></tr>
+        <tr><td class="time">08:14</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/7245849" target="_blank" rel="noopener">7245849</a><span>Add TypeScript, ESLint and Prettier setup</span></td><td>tsx, TypeScript in strict mode, ESLint and Prettier.<span class="files">package.json · package-lock.json · tsconfig.json · eslint.config.js · .prettierrc.json</span></td><td class="stat"><span class="add">+1951</span></td></tr>
+        <tr><td class="time">08:14</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/cd5e155" target="_blank" rel="noopener">cd5e155</a><span>Add order router and CLI</span></td><td>Rules 1 to 7, edit merge, stock reservation and the messy-data fixes.<span class="files">src/router.ts · src/cli.ts</span></td><td class="stat"><span class="add">+148</span></td></tr>
+        <tr><td class="time">08:14</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/1b952a2" target="_blank" rel="noopener">1b952a2</a><span>Add router and golden tests</span></td><td>11 unit tests and 2 golden tests from the hand trace.<span class="files">src/router.test.ts · src/golden.test.ts</span></td><td class="stat"><span class="add">+258</span></td></tr>
+        <tr><td class="time">08:14</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/056e482" target="_blank" rel="noopener">056e482</a><span>Add route outputs</span></td><td>The printed routes, and the same run with WH-NV off.<span class="files">routes.txt · routes-nv-off.txt</span></td><td class="stat"><span class="add">+52</span></td></tr>
+        <tr><td class="time">08:14</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/7f4f32d" target="_blank" rel="noopener">7f4f32d</a><span>Add Part B answers</span></td><td>Question 1 with WH-NV off. Question 2: ship option 3.<span class="files">ANSWERS.md</span></td><td class="stat"><span class="add">+56</span></td></tr>
+        <tr><td class="time">08:14</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/7ffcc84" target="_blank" rel="noopener">7ffcc84</a><span>Document how to run the router</span></td><td>The Run section: install, route and test.<span class="files">README.md</span></td><td class="stat"><span class="add">+15</span></td></tr>
+        <tr><td class="time">08:14</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/38c20cf" target="_blank" rel="noopener">38c20cf</a><span>Add husky pre-commit and pre-push checks</span></td><td>Both hooks run <code>npm run check</code>.<span class="files">.husky/pre-commit · .husky/pre-push</span></td><td class="stat"><span class="add">+2</span></td></tr>
+        <tr><th colspan="5">Review and hardening</th></tr>
+        <tr><td class="time">08:23</td><td><span class="kind session">Session</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/blob/main/ai-transcripts/2026-10-23-7e9decb8.md" target="_blank" rel="noopener">7e9decb8</a><span>Order routing code review</span></td><td>21 findings: 3 medium, 18 low, none high. None changes routes.txt today. A builder fixed them and a checker compared the diff with the list.</td><td class="stat">–</td></tr>
+        <tr><td class="time">08:54</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/ca3eade" target="_blank" rel="noopener">ca3eade</a><span>Split router into steps, validate input data and test --off parsing</span></td><td>The 21 fixes. The router is now validate, mergeEvents, normalizeZip, expandLines, rank, pick and reserve. args.ts parses --off strictly. <code>npm run check</code> now runs tsc first. Tests go from 13 to 25.<span class="files">src/router.ts · src/router.test.ts · src/golden.test.ts · src/args.ts · src/args.test.ts · src/cli.ts · package.json</span></td><td class="stat"><span class="add">+361</span> <span class="del">−86</span></td></tr>
+        <tr><td class="time">09:00</td><td><span class="kind session">Session</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/blob/main/ai-transcripts/2026-10-23-561058d0.md" target="_blank" rel="noopener">561058d0</a><span>Artifact sync with latest changes</span></td><td>This page, version 4, matched to ca3eade.</td><td class="stat">–</td></tr>
+        <tr><td class="time">09:03</td><td><span class="kind session">Session</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/blob/main/ai-transcripts/2026-10-23-bef280db.md" target="_blank" rel="noopener">bef280db</a><span>PARTNER string constant refactor</span></td><td>Kept the literal: the code writes PARTNER in one place. Found that nothing checked the keys of zones.json.</td><td class="stat">–</td></tr>
+        <tr><td class="time">09:23</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/eb65af7" target="_blank" rel="noopener">eb65af7</a><span>Check zones.json keys against PRIORITY</span></td><td>A zones table with an unknown key such as "WH-nj" now stops the run. Before, it skipped WH-NJ for every order with no error.<span class="files">src/router.ts · src/router.test.ts</span></td><td class="stat"><span class="add">+8</span> <span class="del">−1</span></td></tr>
+        <tr><th colspan="5">Publish</th></tr>
+        <tr><td class="time">09:51</td><td><span class="kind session">Session</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/blob/main/ai-transcripts/2026-10-23-da173695.md" target="_blank" rel="noopener">da173695</a><span>Acceptance criteria review, merge to main and push</span></td><td>Every criterion met except the publish. A hand check of all 26 routes matched.</td><td class="stat">–</td></tr>
+        <tr><td class="time">09:56</td><td><span class="kind push">Push</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/tree/main" target="_blank" rel="noopener">main</a><span>Fast-forward to eb65af7</span></td><td>main took the work from feature/order-routing with no merge commit and went to GitHub. The pre-push hook passed. feature/order-routing stays local.</td><td class="stat">–</td></tr>
+        <tr><td class="time">10:33</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/620f898" target="_blank" rel="noopener">620f898</a><span>Add AI conversation transcripts</span></td><td>The 12 sessions as Markdown, with an index, and a link from README.md. Pushed: this is the head of main.<span class="files">ai-transcripts/ (12 sessions + README.md) · README.md</span></td><td class="stat"><span class="add">+10173</span></td></tr>
+      </tbody>
+    </table></div>
+    <p class="small muted">This page is also saved in the repo as docs/natura-order-routing.html. The session that saved it is not in ai-transcripts/.</p>
+  </section>
+
+  <section class="col" id="open">
+    <h2>Open points</h2>
+    <ul class="plain">
+      <li>main on GitHub has every commit. feature/order-routing was not pushed. It stops at eb65af7, and main holds that commit.</li>
+      <li>The booking form asks for the repo link and the AI conversation path: github.com/MDGF93/raicom-homework and ai-transcripts/.</li>
+      <li>INSTRUCTIONS.md now calls the Part B questions 1 and 2, but line 39 still says "question 4". ANSWERS.md uses 1 and 2.</li>
+      <li>The router does not check for edits later than 30 minutes. The data has none.</li>
+      <li>No order in today's file reaches rule 6. Only a unit test covers it.</li>
+      <li>A person must confirm that the partner ships US orders: #2056 with WH-NV off, #2042 (Honolulu) and #2046 (no ZIP).</li>
+      <li>The replay on this page uses a JavaScript copy of the rules, with the same data fixes but without the input checks. The deliverable is the TypeScript router with its tests.</li>
+    </ul>
+  </section>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+const DATA = {"orders":[{"type":"order_created","orderNumber":"#2031","at":"2026-10-20T13:00:00.000Z","shipTo":{"country":"US","state":"NJ","zip":"07030"},"lines":[{"sku":"NW-VITD-60","quantity":1}]},{"type":"order_created","orderNumber":"#2032","at":"2026-10-20T13:03:37.000Z","shipTo":{"country":"US","state":"GA","zip":"30303"},"lines":[{"sku":"NW-MULTI-30","quantity":1}]},{"type":"order_created","orderNumber":"#2033","at":"2026-10-20T13:07:14.000Z","shipTo":{"country":"US","state":"MA","zip":2134},"lines":[{"sku":"NW-VITD-60","quantity":1}]},{"type":"order_created","orderNumber":"#2034","at":"2026-10-20T13:09:00.000Z","shipTo":{"country":"US","state":"IL","zip":"60614"},"lines":[{"sku":"NW-MAG-90","quantity":1}]},{"type":"order_created","orderNumber":"#2035","at":"2026-10-20T13:12:37.000Z","shipTo":{"country":"US","state":"TX","zip":"75201"},"lines":[{"sku":"NW-VITD-60","quantity":1}]},{"type":"order_created","orderNumber":"#2036","at":"2026-10-20T13:16:14.000Z","shipTo":{"country":"US","state":"NV","zip":"89109"},"lines":[{"sku":"NW-MAG-90","quantity":2}]},{"type":"order_created","orderNumber":"#2037","at":"2026-10-20T13:18:00.000Z","shipTo":{"country":"CA","state":"ON","zip":"M5V 2T6"},"lines":[{"sku":"NW-MULTI-30","quantity":1}]},{"type":"order_created","orderNumber":"#2038","at":"2026-10-20T13:21:37.000Z","shipTo":{"country":"US","state":"CA","zip":"90012"},"lines":[{"sku":"NW-VITD-60","quantity":1}]},{"type":"order_created","orderNumber":"#2039","at":"2026-10-20T13:25:14.000Z","shipTo":{"country":"US","state":"NJ","zip":"07030-1834"},"lines":[{"sku":"NW-MAG-90","quantity":2}]},{"type":"order_created","orderNumber":"#2040","at":"2026-10-20T13:27:00.000Z","shipTo":{"country":"US","state":"NY","zip":"10001"},"lines":[{"sku":"NW-BNDL-ESS","quantity":1}]},{"type":"order_created","orderNumber":"#2041","at":"2026-10-20T13:30:37.000Z","shipTo":{"country":"US","state":"NV","zip":"89117"},"lines":[{"sku":"NW-VITD-60","quantity":1}]},{"type":"order_created","orderNumber":"#2042","at":"2026-10-20T13:34:14.000Z","shipTo":{"country":"US","state":"HI","zip":"96815"},"lines":[{"sku":"NW-VITD-60","quantity":1}]},{"type":"order_created","orderNumber":"#2043","at":"2026-10-20T13:36:00.000Z","shipTo":{"country":"US","state":"CA","zip":"94110"},"lines":[{"sku":"NW-MAG-90","quantity":1}]},{"type":"order_created","orderNumber":"#2044","at":"2026-10-20T13:39:37.000Z","shipTo":{"country":"US","state":"CO","zip":"80202"},"lines":[{"sku":"NW-MULTI-30","quantity":1}]},{"type":"order_created","orderNumber":"#2045","at":"2026-10-20T13:43:14.000Z","shipTo":{"country":"US","state":"NC","zip":"28202"},"lines":[{"sku":"nw-mag-90","quantity":1}]},{"type":"order_created","orderNumber":"#2046","at":"2026-10-20T13:45:00.000Z","shipTo":{"country":"US","state":"NJ","zip":""},"lines":[{"sku":"NW-MULTI-30","quantity":1}]},{"type":"order_edited","orderNumber":"#2041","at":"2026-10-20T13:48:37.000Z","addedLines":[{"sku":"NW-MULTI-30","quantity":1}]},{"type":"order_created","orderNumber":"#2047","at":"2026-10-20T13:48:37.000Z","shipTo":{"country":"US","state":"TX","zip":"75204"},"lines":[{"sku":"NW-MULTI-30","quantity":3}]},{"type":"order_created","orderNumber":"#2048","at":"2026-10-20T13:52:14.000Z","shipTo":{"country":"US","state":"IL","zip":"60601"},"lines":[{"sku":"NW-VITD-60","quantity":1}]},{"type":"order_created","orderNumber":"#2049","at":"2026-10-20T13:54:00.000Z","shipTo":{"country":"US","state":"FL","zip":"33130"},"lines":[{"sku":"NW-MAG-90","quantity":1}]},{"type":"order_created","orderNumber":"#2050","at":"2026-10-20T13:57:37.000Z","shipTo":{"country":"US","state":"GA","zip":"30309"},"lines":[{"sku":"NW-VITD-60","quantity":2}]},{"type":"order_created","orderNumber":"#2051","at":"2026-10-20T14:01:14.000Z","shipTo":{"country":"US","state":"NV","zip":"89123"},"lines":[{"sku":"NW-VITD-60","quantity":1}]},{"type":"order_created","orderNumber":"#2052","at":"2026-10-20T14:03:00.000Z","shipTo":{"country":"US","state":"WA","zip":"98101"},"lines":[{"sku":"NW-MAG-90","quantity":1}]},{"type":"order_created","orderNumber":"#2053","at":"2026-10-20T14:06:37.000Z","shipTo":{"country":"US","state":"NY","zip":"10003"},"lines":[{"sku":"NW-MULTI-30","quantity":1}]},{"type":"order_created","orderNumber":"#2054","at":"2026-10-20T14:10:14.000Z","shipTo":{"country":"US","state":"TX","zip":"75201"},"lines":[{"sku":"NW-MAG-90","quantity":1}]},{"type":"order_created","orderNumber":"#2055","at":"2026-10-20T14:12:00.000Z","shipTo":{"country":"US","state":"CA","zip":"90015"},"lines":[{"sku":"NW-MULTI-30","quantity":1}]},{"type":"order_created","orderNumber":"#2056","at":"2026-10-20T14:15:37.000Z","shipTo":{"country":"US","state":"NJ","zip":"07047"},"lines":[{"sku":"NW-BNDL-ESS","quantity":1}]}],"warehouses":[{"code":"WH-NJ","city":"Edison, NJ","enabled":true,"inventory":{"NW-VITD-60":{"available":400,"dailyVelocity":40},"NW-MULTI-30":{"available":120,"dailyVelocity":30},"NW-MAG-90":{"available":2,"dailyVelocity":20}}},{"code":"WH-GA","city":"Atlanta, GA","enabled":true,"inventory":{"NW-VITD-60":{"available":4,"dailyVelocity":30},"NW-MULTI-30":{"available":300,"dailyVelocity":25},"NW-MAG-90":{"available":150,"dailyVelocity":15}}},{"code":"WH-NV","city":"Reno, NV","enabled":true,"inventory":{"NW-VITD-60":{"available":200,"dailyVelocity":10},"NW-MULTI-30":{"available":0,"dailyVelocity":12},"NW-MAG-90":{"available":220,"dailyVelocity":8}}},{"code":"WH-TX","city":"Dallas, TX","enabled":false,"inventory":{"NW-VITD-60":{"available":500,"dailyVelocity":0},"NW-MULTI-30":{"available":500,"dailyVelocity":0},"NW-MAG-90":{"available":500,"dailyVelocity":0}}}],"zones":{"_note":"Shipping zone (1 = closest, 8 = farthest) from each warehouse to the first three digits of the destination ZIP.","WH-NJ":{"100":2,"282":4,"303":5,"331":6,"606":5,"752":6,"802":7,"891":8,"900":8,"941":8,"981":8,"021":3,"070":1},"WH-GA":{"100":5,"282":3,"303":1,"331":4,"606":5,"752":4,"802":6,"891":7,"900":8,"941":8,"981":8,"021":6,"070":5},"WH-NV":{"100":8,"282":7,"303":7,"331":8,"606":7,"752":5,"802":4,"891":2,"900":4,"941":3,"981":5,"021":8,"070":8},"WH-TX":{"100":6,"282":5,"303":4,"331":6,"606":5,"752":1,"802":5,"891":5,"900":6,"941":7,"981":8,"021":7,"070":6}},"catalog":{"products":[{"sku":"NW-VITD-60","name":"Vitamin D, 60 softgels","priceCents":2995},{"sku":"NW-MULTI-30","name":"Multivitamin, 30 tablets","priceCents":4495},{"sku":"NW-MAG-90","name":"Magnesium, 90 capsules","priceCents":3295}],"bundles":[{"sku":"NW-BNDL-ESS","name":"Daily Essentials Bundle","priceCents":5495,"components":[{"sku":"NW-VITD-60","quantity":1},{"sku":"NW-MAG-90","quantity":1}]}]}};
+// Demo router for the artifact page. It applies the 7 ticket rules and keeps a trace for the illustrations.
+const PRIORITY = ['WH-NJ', 'WH-GA', 'WH-NV', 'WH-TX'];
+
+function routeAll(data, opt = {}) {
+  const off = new Set(opt.off || []);
+  const naive = !!opt.naive;
+  const bundles = new Map(data.catalog.bundles.map(b => [b.sku, b.components]));
+  // Warehouse code -> ZIP prefix -> zone. Keys that are not tables (_note) drop out.
+  const zoneTables = Object.fromEntries(Object.entries(data.zones).filter(([, v]) => v !== null && typeof v === 'object'));
+  const note = (o, text) => { if (!o.notes.includes(text)) o.notes.push(text); };
+  const stock = {};
+  for (const w of data.warehouses) {
+    stock[w.code] = {};
+    for (const [sku, v] of Object.entries(w.inventory)) stock[w.code][sku] = v.available;
+  }
+
+  // Pass 1: build each order with all its edits. A naive router routes at creation, so it never sees edits.
+  const orders = new Map();
+  for (const e of data.orders) {
+    if (e.type === 'order_created') {
+      orders.set(e.orderNumber, { ...e, lines: e.lines.map(l => ({ ...l })), notes: [] });
+    } else if (e.type === 'order_edited' && !naive) {
+      const o = orders.get(e.orderNumber);
+      if (!o) continue;
+      o.lines.push(...e.addedLines.map(l => ({ ...l, fromEdit: true })));
+      o.notes.push(`edit +${Math.round((Date.parse(e.at) - Date.parse(o.at)) / 60000)} min merged`);
+    }
+  }
+
+  // Pass 2: route in creation order. Each routed order reserves its stock.
+  const sorted = [...orders.values()].sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
+  const results = [];
+  for (const o of sorted) {
+    const r = routeOne(o);
+    r.stockAfter = JSON.parse(JSON.stringify(stock));
+    results.push(r);
+  }
+  return results;
+
+  function routeOne(o) {
+    const base = { orderNumber: o.orderNumber, at: o.at, shipTo: o.shipTo, rawLines: o.lines, notes: o.notes, needs: {}, candidates: [] };
+    const partner = (rule, reason, extra = {}) => ({ ...base, ...extra, dest: 'PARTNER', zone: null, rule, reason });
+
+    const country = naive ? o.shipTo.country : o.shipTo.country.trim().toUpperCase();
+    if (country !== o.shipTo.country) note(o, `country ${o.shipTo.country} read as ${country}`);
+    if (country !== 'US') return partner(1, `international (${country})`);
+
+    // As normalizeZip in router.ts: pad a number, or a string of 1 to 4 digits, to 5 digits.
+    const raw = o.shipTo.zip;
+    let zip = typeof raw === 'number' ? String(raw) : typeof raw === 'string' ? raw.trim() : '';
+    if (!naive && (typeof raw === 'number' || /^\d{1,4}$/.test(zip)) && zip.padStart(5, '0') !== zip) {
+      note(o, `ZIP ${raw} read as ${zip.padStart(5, '0')}`);
+      zip = zip.padStart(5, '0');
+    }
+    if (!zip) return partner(2, 'no ZIP');
+    const prefix = zip.slice(0, 3);
+    const known = Object.values(zoneTables).some(t => typeof t[prefix] === 'number');
+    if (!known) return partner(2, `ZIP prefix ${prefix} not in zones`, { prefix });
+
+    const needs = {};
+    for (const l of o.lines) {
+      let sku = l.sku;
+      if (!naive && sku.trim().toUpperCase() !== sku) {
+        note(o, `SKU ${sku} read as ${sku.trim().toUpperCase()}`);
+        sku = sku.trim().toUpperCase();
+      }
+      const parts = !naive && bundles.get(sku);
+      if (parts) {
+        note(o, `bundle ${sku} expanded`);
+        for (const p of parts) {
+          const part = p.sku.trim().toUpperCase();
+          needs[part] = (needs[part] || 0) + p.quantity * l.quantity;
+        }
+      } else {
+        needs[sku] = (needs[sku] || 0) + l.quantity;
+      }
+    }
+
+    const candidates = data.warehouses.map(w => {
+      const enabled = w.enabled && !off.has(w.code);
+      const z = zoneTables[w.code] ? zoneTables[w.code][prefix] : undefined;
+      const zone = typeof z === 'number' ? z : undefined;
+      const short = Object.keys(needs).filter(s => (stock[w.code][s] || 0) < needs[s]);
+      const cover = Math.min(...Object.keys(needs).map(s => {
+        const v = w.inventory[s] ? w.inventory[s].dailyVelocity : 0;
+        return v > 0 ? (stock[w.code][s] || 0) / v : Infinity;
+      }));
+      return { code: w.code, enabled, configEnabled: w.enabled, zone, short, cover, ok: enabled && zone !== undefined && short.length === 0 };
+    });
+    const ok = candidates.filter(c => c.ok).sort((a, b) =>
+      a.zone - b.zone || b.cover - a.cover || PRIORITY.indexOf(a.code) - PRIORITY.indexOf(b.code));
+    const extra = { prefix, needs, candidates };
+    if (!ok.length) return partner(7, 'no warehouse can take it', extra);
+
+    const best = ok[0], next = ok[1];
+    let rule = 4, reason = `zone ${best.zone}`;
+    if (!next) { rule = 3; reason = `zone ${best.zone}, only warehouse that can take it`; }
+    else if (next.zone === best.zone && next.cover !== best.cover) { rule = 5; reason = `zone ${best.zone}, tie-break cover`; }
+    else if (next.zone === best.zone) { rule = 6; reason = `zone ${best.zone}, tie-break priority`; }
+    for (const s of Object.keys(needs)) stock[best.code][s] -= needs[s];
+    return { ...base, ...extra, dest: best.code, zone: best.zone, rule, reason };
+  }
+}
+
+
+
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const SHORT = { 'WH-NJ': 'NJ', 'WH-GA': 'GA', 'WH-NV': 'NV', 'WH-TX': 'TX', PARTNER: 'PTR' };
+const COLOR = { 'WH-NJ': 'var(--wh-nj)', 'WH-GA': 'var(--wh-ga)', 'WH-NV': 'var(--wh-nv)', 'WH-TX': 'var(--wh-tx)', PARTNER: 'var(--partner)' };
+const CITY = { '021': 'Boston', '070': 'Newark', '100': 'New York', '282': 'Charlotte', '303': 'Atlanta', '331': 'Miami', '606': 'Chicago', '752': 'Dallas', '802': 'Denver', '891': 'Las Vegas', '900': 'Los Angeles', '941': 'San Francisco', '981': 'Seattle' };
+const SKUS = ['NW-VITD-60', 'NW-MULTI-30', 'NW-MAG-90'];
+const SKU_SHORT = { 'NW-VITD-60': 'VITD', 'NW-MULTI-30': 'MULTI', 'NW-MAG-90': 'MAG' };
+const RULES = [
+  'Outside the US: PARTNER.',
+  'No ZIP, or a ZIP prefix that is not in zones.json: PARTNER.',
+  'A warehouse qualifies only if it is enabled and has stock for every item. No split.',
+  'Pick the lowest zone.',
+  'Zone tie: pick the most days of cover (available ÷ daily velocity, the smallest over the order\'s products).',
+  'Cover tie: WH-NJ, then WH-GA, WH-NV, WH-TX.',
+  'No warehouse qualifies: PARTNER.'
+];
+const wh = code => `<span class="wh"><span class="sw" style="background:${COLOR[code]}"></span>${code}</span>`;
+const dest = r => r.dest === 'PARTNER' ? 'PARTNER' : `${r.dest} z${r.zone}`;
+const days = v => v === Infinity ? 'no limit' : v < 1 ? v.toFixed(2) : v.toFixed(1);
+const initial = Object.fromEntries(DATA.warehouses.map(w => [w.code, Object.fromEntries(Object.entries(w.inventory).map(([s, v]) => [s, v.available]))]));
+const baseline = routeAll(DATA);
+const state = { idx: baseline.findIndex(r => r.orderNumber === '#2040') };
+
+/* Tooltip for every element with data-tip */
+const tip = $('#tip');
+function showTip(text, x, y) {
+  tip.textContent = text; tip.hidden = false;
+  tip.style.left = Math.max(8, Math.min(x + 12, innerWidth - tip.offsetWidth - 8)) + 'px';
+  tip.style.top = Math.min(y + 16, innerHeight - tip.offsetHeight - 8) + 'px';
+}
+document.addEventListener('pointermove', e => {
+  const t = e.target.closest && e.target.closest('[data-tip]');
+  if (t) showTip(t.dataset.tip, e.clientX, e.clientY); else tip.hidden = true;
+});
+document.addEventListener('focusin', e => {
+  const t = e.target.closest && e.target.closest('[data-tip]');
+  if (!t) { tip.hidden = true; return; }
+  const b = t.getBoundingClientRect(); showTip(t.dataset.tip, b.left, b.bottom - 8);
+});
+document.addEventListener('focusout', () => { tip.hidden = true; });
+
+/* Zone chart */
+(function zoneChart() {
+  // JS lists keys such as "100" before "021", so sort them as text.
+  const prefixes = Object.keys(DATA.zones['WH-NJ']).sort();
+  const counts = {};
+  for (const r of baseline) if (r.prefix && CITY[r.prefix]) counts[r.prefix] = (counts[r.prefix] || 0) + 1;
+  let h = '<thead><tr><th>Warehouse</th>' + prefixes.map(p => `<th class="pfx">${p}<span>${CITY[p]}</span></th>`).join('') + '</tr></thead><tbody>';
+  for (const w of DATA.warehouses) {
+    h += `<tr class="${w.enabled ? '' : 'disabled'}"><th>${wh(w.code)}${w.enabled ? '' : ' <span class="tag">disabled</span>'}</th>`;
+    for (const p of prefixes) {
+      const z = DATA.zones[w.code][p];
+      const pct = Math.round((9 - z) / 8 * 88);
+      const fg = pct > 48 ? 'var(--surface)' : 'var(--ink)';
+      h += `<td class="z" tabindex="0" style="background-color:color-mix(in oklab, var(--zone-ink) ${pct}%, var(--surface));color:${fg}" data-tip="${w.code} to ${p} (${CITY[p]}): zone ${z}${w.enabled ? '' : ', but disabled'}">${z}</td>`;
+    }
+    h += '</tr>';
+  }
+  h += '<tr class="count"><th class="label">Orders today</th>' + prefixes.map(p => `<td>${counts[p] || '·'}</td>`).join('') + '</tr></tbody>';
+  $('#zoneTable').innerHTML = h;
+})();
+
+/* Replay */
+function opts() {
+  const off = [];
+  if ($('#optNv').checked) off.push('WH-NV');
+  if ($('#optGa').checked) off.push('WH-GA');
+  return { naive: !$('#optClean').checked, off };
+}
+function ruleStates(r) {
+  const hit = r.rule;
+  return RULES.map((_, i) => {
+    const n = i + 1;
+    if (n === hit) return 'hit';
+    if (hit === 7) return n <= 3 ? 'pass' : 'skip';
+    return n < hit ? 'pass' : 'skip';
+  });
+}
+function render() {
+  const results = routeAll(DATA, opts());
+  const r = results[state.idx];
+  const before = state.idx > 0 ? results[state.idx - 1].stockAfter : initial;
+
+  // Strip of all orders
+  $('#strip').innerHTML = results.map((x, i) => {
+    const changed = dest(x) !== dest(baseline[i]);
+    return `<button type="button" class="cell${i === state.idx ? ' cur' : ''}${changed ? ' changed' : ''}" style="background:${COLOR[x.dest]}" data-i="${i}"
+      data-tip="${x.orderNumber}: ${dest(x)}${changed ? ' (Part A: ' + dest(baseline[i]) + ')' : ''}" aria-label="${x.orderNumber}, ${dest(x)}">
+      <span class="n">${x.orderNumber.slice(-2)}</span><span>${SHORT[x.dest]}${x.zone ? '·' + x.zone : ''}</span></button>`;
+  }).join('');
+  const nChanged = results.filter((x, i) => dest(x) !== dest(baseline[i])).length;
+  $('#changeNote').innerHTML = nChanged
+    ? `<span class="dot"></span> ${nChanged} orders route differently from Part A (clean data, warehouses as in the files).`
+    : 'This is Part A: clean data, warehouses as in the files.';
+  $('#legend').innerHTML = ['WH-NJ', 'WH-GA', 'WH-NV', 'PARTNER'].map(c => `<span><span class="sw" style="background:${COLOR[c]}"></span>${c}</span>`).join('');
+
+  // Order card
+  const zipRaw = r.shipTo.zip === undefined ? '(missing)' : typeof r.shipTo.zip === 'number' ? `${r.shipTo.zip} (a number)` : `"${r.shipTo.zip}"`;
+  const lines = r.rawLines.map(l => `<li class="${l.fromEdit ? 'edit' : ''}">${l.quantity} × ${esc(l.sku)}${l.fromEdit ? '  (from the edit)' : ''}</li>`).join('');
+  const needs = Object.entries(r.needs).map(([s, q]) => `<li>${q} × ${esc(s)}</li>`).join('');
+  $('#orderCard').innerHTML = `
+    <div class="head"><span class="num">${r.orderNumber}</span><span class="label">${r.at.slice(11, 16)} UTC</span></div>
+    <div><span class="label">Ship to</span><ul><li>${esc(r.shipTo.country)} · ${esc(r.shipTo.state)} · zip ${esc(zipRaw)}</li>${r.prefix ? `<li>prefix ${r.prefix}${CITY[r.prefix] ? ' (' + CITY[r.prefix] + ')' : ''}</li>` : ''}</ul></div>
+    <div><span class="label">Lines in the file</span><ul>${lines}</ul></div>
+    ${needs ? `<div><span class="label">Units to ship</span><ul>${needs}</ul></div>` : ''}
+    ${r.notes.length ? `<div><span class="label">Data fixes</span><ul class="notes">${r.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul></div>` : ''}
+    <div class="stamp"><span class="dest" style="background:${COLOR[r.dest]}">${r.dest}${r.zone ? ' · zone ' + r.zone : ''}</span><span class="why">Rule ${r.rule}: ${esc(r.reason)}</span></div>`;
+
+  // Rule list
+  const st = ruleStates(r);
+  $('#ruleList').innerHTML = RULES.map((t, i) => `<li data-state="${st[i]}"><span>${t}</span><span class="st">${st[i] === 'hit' ? 'decides' : st[i] === 'pass' ? 'checked' : ''}</span></li>`).join('');
+
+  // Candidates
+  if (!r.candidates.length) {
+    $('#candWrap').innerHTML = `<p class="small muted" style="padding:12px">Rule ${r.rule} sends this order to PARTNER before any warehouse check.</p>`;
+  } else {
+    const ok = r.candidates.filter(c => c.ok);
+    const best = r.dest !== 'PARTNER' && r.candidates.find(c => c.code === r.dest);
+    const res = c => {
+      if (!c.enabled) return `<span class="bad">no: ${c.configEnabled ? 'off (ops note)' : 'disabled'}</span>`;
+      if (c.zone === undefined) return '<span class="bad">no: no zone</span>';
+      if (c.short.length) return `<span class="bad">no: short of ${c.short.map(s => SKU_SHORT[s] || s).join(', ')}</span>`;
+      if (best && c.code === best.code) return '<span class="ok">chosen</span>';
+      if (c.zone > best.zone) return 'higher zone';
+      if (c.cover < best.cover) return 'less cover';
+      return 'lower priority';
+    };
+    $('#candWrap').innerHTML = `<table class="cands"><thead><tr><th>Warehouse</th><th>Zone</th><th>Days of cover</th><th>Result</th></tr></thead><tbody>${
+      r.candidates.map(c => `<tr class="${best && c.code === best.code ? 'win' : ''}"><td>${wh(c.code)}</td><td>${c.zone ?? '–'}</td><td>${c.short.length ? '–' : days(c.cover)}</td><td class="res">${res(c)}</td></tr>`).join('')
+    }</tbody></table>${ok.length ? '' : '<p class="small muted" style="padding:8px 10px;border-top:1px solid var(--rule)">No warehouse qualifies, so rule 7 sends it to PARTNER.</p>'}`;
+  }
+
+  // Stock after this order
+  const o = opts();
+  $('#stockWrap').innerHTML = `<table class="stock"><thead><tr><th>Warehouse</th>${SKUS.map(s => `<th>${SKU_SHORT[s]}</th>`).join('')}</tr></thead><tbody>${
+    DATA.warehouses.map(w => {
+      const off = !w.enabled || o.off.includes(w.code);
+      return `<tr><td>${wh(w.code)}${off ? ' <span class="tag">' + (w.enabled ? 'off' : 'disabled') + '</span>' : ''}</td>${SKUS.map(s => {
+        const now = r.stockAfter[w.code][s], was = before[w.code][s], v = w.inventory[s].dailyVelocity;
+        const frac = initial[w.code][s] ? now / initial[w.code][s] : 0;
+        return `<td data-tip="${w.code} ${s}: ${now} left of ${initial[w.code][s]}, velocity ${v}/day">${now}${now < was ? `<span class="delta">−${was - now}</span>` : ''} <span class="muted">· ${days(v > 0 ? now / v : Infinity)}</span><div class="bar"><i style="width:${Math.round(frac * 100)}%"></i></div></td>`;
+      }).join('')}</tr>`;
+    }).join('')
+  }</tbody></table>`;
+
+  $('#prev').disabled = state.idx === 0;
+  $('#next').disabled = state.idx === results.length - 1;
+}
+$('#strip').addEventListener('click', e => { const c = e.target.closest('.cell'); if (c) { state.idx = +c.dataset.i; render(); } });
+$('#prev').addEventListener('click', () => { state.idx = Math.max(0, state.idx - 1); render(); });
+$('#next').addEventListener('click', () => { state.idx = Math.min(baseline.length - 1, state.idx + 1); render(); });
+for (const id of ['#optClean', '#optNv', '#optGa']) $(id).addEventListener('change', render);
+render();
+
+/* Checklist */
+const GROUPS = [
+  { title: 'Part A: the seven rules', items: [
+    { id: 'r1', title: 'Rule 1: outside the US goes to PARTNER', quote: 'Orders shipping outside the US go to PARTNER, our international partner warehouse.', test: 'country CA → PARTNER',
+      steps: ['Write a red test: an order to country CA goes to PARTNER.', 'Check shipTo.country before any other rule.', 'Check that #2037 shows PARTNER in routes.txt.'] },
+    { id: 'r2', title: 'Rule 2: no ZIP or unknown prefix goes to PARTNER', quote: "An order with no ZIP, or whose ZIP prefix (first three digits) isn't in zones.json, goes to PARTNER.", test: 'empty ZIP, missing ZIP, prefix 968',
+      steps: ['Write red tests: empty ZIP, missing ZIP, prefix 968.', 'Read the ZIP as text. Pad a number to 5 digits. Use the first 3 characters.', 'Skip the _note key in zones.json. Stop when a table key is not a warehouse code.','Check that #2042 and #2046 show PARTNER and #2033 shows WH-NJ.'] },
+    { id: 'r3', title: 'Rule 3: enabled, full stock, no split', quote: "A warehouse can take an order only if it's enabled and has enough available stock for every item. Orders are never split across warehouses.", test: 'closest WH disabled, WH short of one SKU',
+      steps: ['Write red tests: the closest warehouse is disabled. A warehouse is short of one SKU.', 'Add up the quantity of each SKU before the stock check.', 'Check that no order shows WH-TX.'] },
+    { id: 'r4', title: 'Rule 4: lowest zone', quote: 'Of the warehouses that can take it, pick the lowest zone.', test: 'picks the lowest zone',
+      steps: ['Write a red test: 3 candidates, and the lowest zone wins.', 'Sort the candidates by zone first.'] },
+    { id: 'r5', title: 'Rule 5: zone tie goes to the most days of cover', quote: "If there's a tie, pick the warehouse with the most days of cover for the order. For each product in the order, days of cover is available ÷ daily velocity; the order's cover at a warehouse is the smallest of those.", test: 'zone tie → highest min(available / velocity)',
+      steps: ['Write a red test with 2 lines, so the smallest cover decides.', 'Use the stock before this order reserves. Treat velocity 0 as no limit.', 'Check #2034 (WH-GA), #2048 (WH-NJ) and #2055 (WH-GA).'] },
+    { id: 'r6', title: 'Rule 6: cover tie goes by priority', quote: "If it's still tied, use this priority: WH-NJ, WH-GA, WH-NV, WH-TX.", test: 'zone and cover tie → NJ, GA, NV, TX',
+      steps: ['Write a red test: equal zone and equal cover.', 'Sort by the priority list as the last key.', 'Note: no order in today\'s file needs this rule.'] },
+    { id: 'r7', title: 'Rule 7: no warehouse goes to PARTNER', quote: 'If no warehouse can take it, it goes to PARTNER.', test: 'no candidate → PARTNER',
+      steps: ['Write a red test: no warehouse has the stock.', 'Check that #2056 shows PARTNER when WH-NV is off.'] }
+  ] },
+  { title: 'Part A: sequence, edits and data', items: [
+    { id: 'seq', title: 'Creation order and stock reservation', quote: 'Route orders in the order they were created. Each routed order reserves its stock, so later orders see less.', test: 'events sorted by at, first order takes the last unit',
+      steps: ['Write red tests: events out of order are sorted by created time. The first order takes the last unit.', 'Reserve the stock after each routed order.', 'Check that #2039 takes the last 2 MAG at WH-NJ, so #2040 goes to WH-GA.'] },
+    { id: 'edit', title: 'Edits: route each order once, with everything', quote: 'Customers can add items for up to 30 minutes after ordering (an order_edited event); route each order once, with everything in it.', test: 'edit adds a line, one result per order',
+      steps: ['Write a red test: an edit adds a line, and the router returns one result for the order.', 'Merge every order_edited event into its order before routing.', 'Stop with an error when an edit has no order_created event.', 'Check that #2041 shows WH-GA zone 7 and #2050 shows WH-NJ.'] },
+    { id: 'messy', title: 'Messy data', quote: 'The data is real-world messy.', test: 'ZIP as number, ZIP+4, lowercase SKU, bundle + same SKU',
+      steps: ['Write red tests: ZIP as a number, ZIP+4, lowercase SKU, bundle plus the same SKU.', 'Change SKUs to uppercase. Expand bundles from catalog.json.', 'Pad a short ZIP string. Trim and uppercase the country. Skip an exact copy of an event.', 'Check that #2033, #2040, #2045 and #2056 do not go to PARTNER.'] },
+    { id: 'out', title: 'Output: one line per order in routes.txt', quote: 'prints one line per order: the order number, the warehouse (or PARTNER), and the reason or zone.', test: 'check: 26 lines',
+      steps: ['Print the order number, the warehouse or PARTNER, and the zone or reason.', 'Run npm run route > routes.txt.', 'Check that routes.txt has 26 lines.'] }
+  ] },
+  { title: 'Checks and delivery', items: [
+    { id: 'gold', title: 'Golden test from the hand trace', quote: 'Plan: the full run must match the hand trace of all 26 orders.', test: 'golden: real files → 26 routes',
+      steps: ['Write the golden test from the hand trace before the build.', 'Builder must not change the golden test.', 'Fix the 21 code review findings (ca3eade) and the zones.json key gap (eb65af7).','Run npm run check: tsc, Prettier, ESLint and the 25 tests. Husky runs it before each commit and push.', 'Check that routes.txt and routes-nv-off.txt match a fresh run.'] },
+    { id: 'pub', title: 'Publish on GitHub', quote: 'Put your script and the output it printed (routes.txt) in a GitHub repo or gist.', test: 'check: main on GitHub has routes.txt',
+      steps: ['Commit the work on feature/order-routing.', 'Fast-forward main to feature/order-routing (eb65af7).', 'Push main to github.com/MDGF93/raicom-homework. The pre-push hook runs npm run check first.', 'Check that main on GitHub shows src/, routes.txt and ANSWERS.md.'] },
+    { id: 'ai', title: 'AI conversation link', quote: 'If you worked in an editor like Cursor or Copilot, export the chat into your repo and provide the file path.', test: 'check: 12 sessions in ai-transcripts/',
+      steps: ['Convert the 12 local Claude Code sessions to Markdown, one file per session.', 'Leave out personal settings, skill text and thinking blocks. Cut tool output after 1,500 characters.', 'List the sessions in ai-transcripts/README.md and link the folder from README.md.', 'Commit and push to main: 620f898.'] }
+  ] },
+  { title: 'Part B: decisions', items: [
+    { id: 'q3', title: 'Question 1: where each order ships today', quote: 'Where should each of these orders actually ship from today?', test: 'golden: --off WH-NV for the 7 orders and #2056',
+      steps: ['Run the router with --off WH-NV. Save routes-nv-off.txt.', 'Write the answer and the reason for each of the 7 orders in ANSWERS.md.'] },
+    { id: 'q4', title: 'Question 2: WH-GA until Monday', quote: 'Marco asks whether the router should stop sending orders to WH-GA until Monday. What do you ship?', test: 'golden: --off WH-NV,WH-GA',
+      steps: ['Run the router with --off WH-NV,WH-GA to show option 1.', 'Write the decision, the numbers and the conditions in ANSWERS.md.'] }
+  ] }
+];
+const KEY = 'natura-routing-checklist-v4';
+// Criteria with a green test or a checked output. Their steps start ticked until the reader changes a tick.
+const DONE = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'seq', 'edit', 'messy', 'out', 'gold', 'pub', 'ai', 'q3', 'q4'];
+let ticks = null;
+try { ticks = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { ticks = null; }
+if (!ticks) {
+  ticks = {};
+  GROUPS.flatMap(g => g.items).filter(a => DONE.includes(a.id)).forEach(a => a.steps.forEach((_, i) => { ticks[a.id + i] = true; }));
+}
+function pill(ac) {
+  const n = ac.steps.filter((_, i) => ticks[ac.id + i]).length;
+  const [cls, txt] = n === 0 ? ['todo', 'To do'] : n === ac.steps.length ? ['done', 'Done'] : ['doing', `${n} of ${ac.steps.length}`];
+  return `<span class="pill ${cls}" id="pill-${ac.id}">${txt}</span>`;
+}
+$('#groups').innerHTML = GROUPS.map(g => `<div class="group"><h3><span>${g.title}</span><span class="label">${g.items.length} criteria</span></h3>${
+  g.items.map(ac => `<div class="ac"><div class="t"><b>${ac.title}</b><blockquote>“${esc(ac.quote)}”</blockquote><span class="small muted">Test: <code>${esc(ac.test)}</code></span>${pill(ac)}</div>
+    <ul>${ac.steps.map((s, i) => `<li><label><input type="checkbox" id="step-${ac.id}-${i}" data-ac="${ac.id}" data-i="${i}"${ticks[ac.id + i] ? ' checked' : ''}><span>${esc(s)}</span></label></li>`).join('')}</ul></div>`).join('')
+}</div>`).join('');
+$('#groups').addEventListener('change', e => {
+  const t = e.target; if (!t.dataset.ac) return;
+  ticks[t.dataset.ac + t.dataset.i] = t.checked;
+  try { localStorage.setItem(KEY, JSON.stringify(ticks)); } catch (err) { /* ticks stay for this visit only */ }
+  const ac = GROUPS.flatMap(g => g.items).find(a => a.id === t.dataset.ac);
+  $('#pill-' + ac.id).outerHTML = pill(ac);
+});
+
+/* Question 1 */
+(function q3() {
+  const nvOff = routeAll(DATA, { off: ['WH-NV'] });
+  const why = {
+    '#2033': 'The ZIP is the number 2134. The router reads it as 02134 (MA).',
+    '#2037': 'The order ships to Canada.',
+    '#2040': 'The bundle needs MAG. WH-NJ (zone 2) has no MAG after #2039.',
+    '#2041': 'The edit adds MULTI. WH-NV has no MULTI and cannot ship. WH-NJ is zone 8.',
+    '#2045': 'The SKU is lowercase. WH-NJ has no MAG.',
+    '#2050': 'WH-GA has 1 VITD after #2041. The order needs 2.',
+    '#2051': 'The router picks WH-NV, but WH-NV cannot ship. WH-GA has its last VITD.'
+  };
+  const pick = list => Object.keys(why).map(n => list.find(r => r.orderNumber === n));
+  const a = pick(baseline), b = pick(nvOff);
+  $('#q3Table').innerHTML = `<thead><tr><th>Order</th><th>Part A route</th><th>Ships from</th><th>Why</th></tr></thead><tbody>${
+    b.map((r, i) => `<tr><td class="mono">${r.orderNumber}</td><td class="mono">${dest(a[i])}</td><td>${r.dest === 'PARTNER' ? 'Partner warehouse' : wh(r.dest) + ' <span class="muted mono">z' + r.zone + '</span>'}</td><td>${why[r.orderNumber]}</td></tr>`).join('')
+  }</tbody>`;
+  const moved = nvOff.filter((r, i) => dest(r) !== dest(baseline[i])).map(r => `${r.orderNumber} (${dest(r)})`);
+  $('#q3Note').textContent = `With WH-NV off, these orders also change: ${moved.join(', ')}. #2056 goes to PARTNER because WH-GA runs out of VITD and WH-NJ has no MAG. It is a US order, so ANSWERS.md holds it for a person.`;
+})();
+
+/* Question 2 */
+(function q4() {
+  const both = routeAll(DATA, { off: ['WH-NV', 'WH-GA'] });
+  const usPartner = both.filter((r, i) => r.dest === 'PARTNER' && baseline[i].dest !== 'PARTNER');
+  $('#q4Partner').textContent = `Options 1 and 4 fail with today's network. WH-NV cannot ship and WH-TX is disabled, so with WH-GA off only WH-NJ is left. WH-NJ has 2 MAG. In the replay, ${usPartner.length} of today's US orders then go to PARTNER: ${usPartner.map(r => r.orderNumber).join(', ')}.`;
+  const rows = [
+    { name: '1 · GA off', cost: 294 * 2.35 + 126 * 0.40, saved: 126 * 1.5 },
+    { name: '2 · Keep GA', cost: 0, saved: 0 },
+    { name: '3 · Within 1 zone', cost: 126 * 0.40, saved: 126 * 1.5, pick: true },
+    { name: '4 · GA off, NV on', na: true }
+  ];
+  const chart = (title, key, fmt) => {
+    const W = 360, rowH = 32, left = 128, right = 52, max = Math.max(...rows.filter(r => !r.na).map(r => r[key]));
+    const H = rows.length * rowH + 6;
+    const bars = rows.map((r, i) => {
+      const y = i * rowH + 6;
+      if (r.na) return `<text x="0" y="${y + 17}">${r.name}</text><text x="${left}" y="${y + 17}" class="v">n/a: WH-NV cannot ship</text>`;
+      const w = max ? Math.max(r[key] / max * (W - left - right), r[key] ? 3 : 0) : 0;
+      return `<g data-tip="${r.name}: ${fmt(r[key])}"><rect x="0" y="${y - 4}" width="${W}" height="${rowH - 2}" fill="transparent"></rect>
+        <text x="0" y="${y + 17}">${r.name}</text>
+        <rect x="${left}" y="${y + 4}" width="${w}" height="18" rx="3" class="${r.pick ? 'bar-pick' : 'bar-n'}"></rect>
+        <text x="${left + w + 6}" y="${y + 17}" class="v">${fmt(r[key])}</text></g>`;
+    }).join('');
+    return `<div class="chart"><span class="label">${title}</span><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${title}">
+      <line x1="${left}" x2="${left}" y1="0" y2="${H}" class="base"></line>${bars}</svg></div>`;
+  };
+  $('#q4Charts').innerHTML = chart('Extra shipping cost per day', 'cost', v => '$' + v.toFixed(0)) + chart('Order-days of delay removed per day', 'saved', v => v.toFixed(0));
+  $('#q4Table').innerHTML = `<thead><tr><th>Option</th><th>Extra cost per day</th><th>Order-days removed per day</th></tr></thead><tbody>${
+    rows.map(r => `<tr><td>${r.name}</td><td>${r.na ? 'n/a' : '$' + r.cost.toFixed(2)}</td><td>${r.na ? 'n/a' : r.saved.toFixed(0)}</td></tr>`).join('')
+  }</tbody>`;
+})();
+</script>
+</body>
+</html>

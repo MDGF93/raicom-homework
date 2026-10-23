@@ -16,3 +16,4 @@ npm test
 - `routes-nv-off.txt` is the same run with WH-NV off: `npx tsx src/cli.ts --off WH-NV`.
 - `ANSWERS.md` holds the answers to Part B.
 - `ai-transcripts/` holds the Claude Code conversations for this task.
+- `docs/natura-order-routing.html` explains the rules, replays the 26 orders, and lists the checklist, the Part B answers and every commit. Open it in a browser.
