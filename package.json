@@ -1,0 +1,22 @@
+{
+  "name": "natura-order-router",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "route": "tsx src/cli.ts",
+    "test": "tsx --test src/router.test.ts src/golden.test.ts",
+    "prepare": "husky",
+    "format": "prettier --write src eslint.config.js",
+    "check": "prettier --check src eslint.config.js && eslint src && npm test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.5",
+    "eslint": "^10.13.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.0"
+  }
+}
