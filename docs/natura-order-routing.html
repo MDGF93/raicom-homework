@@ -409,11 +409,11 @@ details summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-2
   <section class="wide" id="history">
     <div style="display:grid;gap:12px;max-width:720px">
       <h2>History: every commit and session</h2>
-      <p>main on <a href="https://github.com/MDGF93/raicom-homework" target="_blank" rel="noopener">github.com/MDGF93/raicom-homework</a> holds 22 commits, the one that adds this page included. 12 Claude Code sessions made the first 14; their transcripts are in ai-transcripts/. The session that made the last 8 is not exported. Each hash and session links to GitHub. Times are UTC on Fri Oct 23, 2026.</p>
+      <p>main on <a href="https://github.com/MDGF93/raicom-homework" target="_blank" rel="noopener">github.com/MDGF93/raicom-homework</a> holds 23 commits, counting the one that holds this version of the page. 13 Claude Code sessions made them, and all 13 transcripts are in ai-transcripts/. Each transcript ends at its export, so it does not show the commit that adds it. Each hash and session links to GitHub. Times are UTC on Fri Oct 23, 2026.</p>
     </div>
     <div class="facts">
-      <div><span class="label">Commits on main</span><b>22</b><span class="small muted">with this page's commit</span></div>
-      <div><span class="label">AI sessions</span><b>12 + 1</b><span class="small muted">12 in ai-transcripts/</span></div>
+      <div><span class="label">Commits on main</span><b>23</b><span class="small muted">with this page's commit</span></div>
+      <div><span class="label">AI sessions</span><b>13</b><span class="small muted">all in ai-transcripts/</span></div>
       <div><span class="label">Tests</span><b>26</b><span class="small muted">20 router, 4 golden, 2 args</span></div>
       <div><span class="label">Review findings</span><b>21</b><span class="small muted">all fixed in ca3eade</span></div>
     </div>
@@ -452,7 +452,7 @@ details summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-2
         <tr><td class="time">09:56</td><td><span class="kind push">Push</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/tree/main" target="_blank" rel="noopener">main</a><span>Fast-forward to eb65af7</span></td><td>main took the work from feature/order-routing with no merge commit, then went to GitHub. The pre-push hook passed.</td><td class="stat">–</td></tr>
         <tr><td class="time">10:33</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/620f898" target="_blank" rel="noopener">620f898</a><span>Add AI conversation transcripts</span></td><td>The 12 sessions as Markdown, with an index, and a link from README.md.<span class="files">ai-transcripts/ (12 sessions + README.md) · README.md</span></td><td class="stat"><span class="add">+10173</span></td></tr>
         <tr><th colspan="5">Page and merge</th></tr>
-        <tr><td class="time">10:40</td><td><span class="kind session">Session</span></td><td class="item"><span class="mono" style="font-weight:600">this session</span><span>Page sync, open points, merge to main</span></td><td>Synced this page to 620f898, reviewed it, fixed the typo below, merged everything to main, then fixed the flag on #2046, stated the partner decision, added the late-edit warning and aligned ANSWERS.md. Not in ai-transcripts/.</td><td class="stat">–</td></tr>
+        <tr><td class="time">10:41</td><td><span class="kind session">Session</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/blob/main/ai-transcripts/2026-10-23-dea2f38b.md" target="_blank" rel="noopener">dea2f38b</a><span>Explainer page sync, open points and merge to main</span></td><td>Synced this page to 620f898, reviewed it, fixed the typo below and merged everything to main. Then fixed the flag on #2046, stated the partner decision, added the late-edit warning, aligned ANSWERS.md and exported its own transcript. It ran in a cloud container.</td><td class="stat">–</td></tr>
         <tr><td class="time">10:49</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/56c3bc7" target="_blank" rel="noopener">56c3bc7</a><span>Add the order routing explainer page</span></td><td>The first repo copy of this page, synced to 620f898, and a README line that points to it.<span class="files">docs/natura-order-routing.html · README.md</span></td><td class="stat"><span class="add">+827</span></td></tr>
         <tr><td class="time">11:04</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/572a37c" target="_blank" rel="noopener">572a37c</a><span>Fix the question number in INSTRUCTIONS.md</span></td><td>Question 1 said "question 4" where it meant question 2, a typo from the old numbering.<span class="files">INSTRUCTIONS.md</span></td><td class="stat"><span class="add">+1</span> <span class="del">−1</span></td></tr>
         <tr><td class="time">11:08</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/77f72f0" target="_blank" rel="noopener">77f72f0</a><span>Update the explainer page</span></td><td>The partner flags, the decisions on the open points and the history up to 572a37c. main fast-forwarded to it and went to GitHub.<span class="files">docs/natura-order-routing.html</span></td><td class="stat"><span class="add">+49</span> <span class="del">−23</span></td></tr>
@@ -460,7 +460,8 @@ details summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-2
         <tr><td class="time">12:21</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/c044d36" target="_blank" rel="noopener">c044d36</a><span>Show the partner decision in Question 1</span></td><td>Question 1 now states the decision: assume the partner ships #2042 and #2056, hold #2046 for the ZIP.<span class="files">docs/natura-order-routing.html</span></td><td class="stat"><span class="add">+37</span> <span class="del">−14</span></td></tr>
         <tr><td class="time">12:27</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/a166518" target="_blank" rel="noopener">a166518</a><span>Warn when an edit comes after the 30-minute window</span></td><td>A late edit still merges, and the note on that line says so: "edit +45 min merged, after the 30-minute window". One new test. Today's data has no late edit, so routes.txt is unchanged. Tests go from 25 to 26.<span class="files">src/router.ts · src/router.test.ts · README.md</span></td><td class="stat"><span class="add">+24</span> <span class="del">−2</span></td></tr>
         <tr><td class="time">12:27</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/1a05da6" target="_blank" rel="noopener">1a05da6</a><span>Align the Question 1 answer with the partner decision</span></td><td>ANSWERS.md now says the same as this page: assume the partner ships #2042 and #2056, hold #2046 for the ZIP.<span class="files">ANSWERS.md</span></td><td class="stat"><span class="add">+1</span> <span class="del">−1</span></td></tr>
-        <tr><td class="time">–</td><td><span class="kind commit">Commit</span></td><td class="item"><span class="mono" style="font-weight:600">this commit</span><span>Sync the page with the late-edit warning</span></td><td>The checklist, the input checks, the decisions and the history now include the late-edit warning and the answers file.<span class="files">docs/natura-order-routing.html</span></td><td class="stat">–</td></tr>
+        <tr><td class="time">12:29</td><td><span class="kind commit">Commit</span></td><td class="item"><a href="https://github.com/MDGF93/raicom-homework/commit/d94c4cc" target="_blank" rel="noopener">d94c4cc</a><span>Sync the page with the late-edit warning</span></td><td>The checklist, the input checks, the decisions and the history now include the late-edit warning and the answers file.<span class="files">docs/natura-order-routing.html</span></td><td class="stat"><span class="add">+19</span> <span class="del">−15</span></td></tr>
+        <tr><td class="time">–</td><td><span class="kind commit">Commit</span></td><td class="item"><span class="mono" style="font-weight:600">this commit</span><span>Add the cloud session transcript</span></td><td>The transcript of session dea2f38b, its row in the ai-transcripts/ list, and this page's history.<span class="files">ai-transcripts/2026-10-23-dea2f38b.md · ai-transcripts/README.md · docs/natura-order-routing.html</span></td><td class="stat">–</td></tr>
       </tbody>
     </table></div>
     <p class="small muted">This page is docs/natura-order-routing.html in the repo. A commit cannot hold its own hash, so the last row has none.</p>
@@ -482,7 +483,7 @@ details summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-2
     <div style="display:grid;gap:8px">
       <span class="label">Still open</span>
       <ul class="plain">
-        <li>Before the call: the booking form takes the repo link, github.com/MDGF93/raicom-homework, and the transcript path, ai-transcripts/. This session is not in that folder.</li>
+        <li>Before the call: the booking form takes the repo link, github.com/MDGF93/raicom-homework, and the transcript path, ai-transcripts/. All 13 sessions are in that folder.</li>
       </ul>
     </div>
   </section>
@@ -794,8 +795,8 @@ const GROUPS = [
       steps: ['Write the golden test from the hand trace before the build.', 'Builder must not change the golden test.', 'Fix the 21 code review findings (ca3eade) and the zones.json key gap (eb65af7).','Run npm run check: tsc, Prettier, ESLint and the 26 tests. Husky runs it before each commit and push.', 'Check that routes.txt and routes-nv-off.txt match a fresh run.'] },
     { id: 'pub', title: 'Publish on GitHub', quote: 'Put your script and the output it printed (routes.txt) in a GitHub repo or gist.', test: 'check: main on GitHub has routes.txt',
       steps: ['Commit the work on feature/order-routing.', 'Fast-forward main to feature/order-routing (eb65af7).', 'Push main to github.com/MDGF93/raicom-homework. The pre-push hook runs npm run check first.', 'Check that main on GitHub shows src/, routes.txt and ANSWERS.md.'] },
-    { id: 'ai', title: 'AI conversation link', quote: 'If you worked in an editor like Cursor or Copilot, export the chat into your repo and provide the file path.', test: 'check: 12 sessions in ai-transcripts/',
-      steps: ['Convert the 12 local Claude Code sessions to Markdown, one file per session.', 'Leave out personal settings, skill text and thinking blocks. Cut tool output after 1,500 characters.', 'List the sessions in ai-transcripts/README.md and link the folder from README.md.', 'Commit and push to main: 620f898.'] }
+    { id: 'ai', title: 'AI conversation link', quote: 'If you worked in an editor like Cursor or Copilot, export the chat into your repo and provide the file path.', test: 'check: 13 sessions in ai-transcripts/',
+      steps: ['Convert the 12 desktop sessions to Markdown, one file per session.', 'Leave out personal settings, skill text and thinking blocks. Cut tool output after 1,500 characters.', 'List the sessions in ai-transcripts/README.md and link the folder from README.md.', 'Commit and push to main: 620f898.', 'Export the cloud session the same way, with the model names left out, and add its row to the list.'] }
   ] },
   { title: 'Part B: decisions', items: [
     { id: 'q3', title: 'Question 1: where each order ships today', quote: 'Where should each of these orders actually ship from today?', test: 'golden: --off WH-NV for the 7 orders and #2056',
@@ -804,7 +805,7 @@ const GROUPS = [
       steps: ['Run the router with --off WH-NV,WH-GA to show option 1.', 'Write the decision, the numbers and the conditions in ANSWERS.md.'] }
   ] }
 ];
-const KEY = 'natura-routing-checklist-v5';
+const KEY = 'natura-routing-checklist-v6';
 // Criteria with a green test or a checked output. Their steps start ticked until the reader changes a tick.
 const DONE = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'seq', 'edit', 'messy', 'out', 'gold', 'pub', 'ai', 'q3', 'q4'];
 let ticks = null;
